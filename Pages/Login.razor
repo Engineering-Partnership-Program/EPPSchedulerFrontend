@@ -1,7 +1,22 @@
 ﻿@page "/"
+@inherits MainLayout
 
 <PageTitle>Login</PageTitle>
 
-<input type="text" placeholder="Username"/>
-<input type="password" placeholder="Password"/>
-Welcome to your new app.
+<MudTextField @bind-Value="username" Label="Username" Variant="Variant.Outlined"></MudTextField>
+<MudTextField  @bind-Value="password" Label="Password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password" />
+
+@code {
+    private string username {get; set;}
+    private string password {get; set;}
+
+    private bool showPassword = false;
+
+    private MudBlazor.InputType PasswordInput => showPassword ? MudBlazor.InputType.Text : MudBlazor.InputType.Password;
+    private string PasswordInputIcon => showPassword ? MudBlazor.Icons.Material.Filled.Visibility : MudBlazor.Icons.Material.Filled.VisibilityOff;
+
+    private void ButtonTestclick()
+    {
+        showPassword = !showPassword;
+    }
+}
