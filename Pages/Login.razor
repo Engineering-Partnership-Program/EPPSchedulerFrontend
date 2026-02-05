@@ -1,60 +1,74 @@
 ﻿@page "/"
 @inherits MainLayout
 @inject ISnackbar Snackbar
+@inject HttpClient client
+@using EPPSchedulerFrontend.DataClasses
+@using System.ComponentModel.DataAnnotations
 
+<EditForm Model="@model" OnValidSubmit="OnValidLogin"/>
+<DataAnnotationsValidator/>
 <PageTitle>Login</PageTitle>
 <MudContainer MaxWidth="MaxWidth.Small">
-    <MudItem>
-        <MudSpacer/>
-    </MudItem>
-    <MudGrid Spacing="1">
-        <MudItem xs="12">
-            <MudText Typo="Typo.h2" Align="Align.Center">Login or Register</MudText>
-        </MudItem>
-        <MudItem xs="12">
-            <MudTextField @bind-Value="username" Label="Username" Variant="Variant.Outlined"></MudTextField>
-        </MudItem>
-        <MudItem xs="12">
-            <MudTextField  
-                @bind-Value="password" 
-                Label="Password" 
-                Variant="Variant.Outlined"
-                InputType="@PasswordInput" 
-                Adornment="Adornment.End" 
-                AdornmentIcon="@PasswordInputIcon"
-                OnAdornmentClick="OnShowClick" 
-                AdornmentAriaLabel="Show Password" />
-        </MudItem>
-        <MudItem xs="12">
-            <MudGrid Justify="Justify.Center">
-                <MudItem xs="6">
-                    <MudButton Variant="Variant.Filled" OnClick="OnLoginClick" FullWidth=true StartIcon="@Icons.Material.TwoTone.Login" Color="Color.Primary">Sign In</MudButton>
-                </MudItem>
-                <MudItem xs="6">
-                    <MudButton Variant="Variant.Filled" Href="/create-account" FullWidth=true StartIcon="@Icons.Material.TwoTone.Create" Color="Color.Primary">Create Account</MudButton>
-                </MudItem>
-            </MudGrid>
-        </MudItem>
+    <MudGrid Spacing="2">
+        <MudPaper Class="pa-4">
+            <MudItem xs="12">
+                <MudText Typo="Typo.h2" Align="Align.Center">Login or Register</MudText>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="model.email" Label="Username" Variant="Variant.Outlined"></MudTextField>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField
+                    @bind-Value="model.password"
+                    Label="Password"
+                    Variant="Variant.Outlined"
+                    InputType="@PasswordInput"
+                    Adornment="Adornment.End"
+                    AdornmentIcon="@PasswordInputIcon"
+                    OnAdornmentClick="OnShowClick"
+                    AdornmentAriaLabel="Show Password" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudGrid Justify="Justify.Center" Spacing="3">
+                    <MudItem xs="6">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" FullWidth=true StartIcon="@Icons.Material.TwoTone.Login" Color="Color.Primary">Sign In</MudButton>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudButton Variant="Variant.Filled" Href="/create-account" FullWidth=true StartIcon="@Icons.Material.TwoTone.Create" Color="Color.Primary">Create Account</MudButton>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        </MudPaper>
     </MudGrid>
 </MudContainer>
 @code {
-    private string username {get; set;}
-    private string password {get; set;}
 
     private bool showPassword = false;
 
     private InputType PasswordInput => showPassword ? InputType.Text : MudBlazor.InputType.Password;
     private string PasswordInputIcon => showPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
 
+    LoginForm model = new LoginForm();
+
     private void OnShowClick()
     {
         showPassword = !showPassword;
     }
 
-    private void OnLoginClick() 
-    {
-        if(username == null || password == null || username == String.Empty || password == String.Empty) {
-            Snackbar.Add("Please enter both username and password", Severity.Error);
-        }
+    public class LoginForm {
+        [Required]
+        [EmailAddress]
+        public string email {get; set;}
+        [Required]
+        [StringLength(30, ErrorMessage = "Password Must be at least 8 characters long", MinimumLength = 8)]
+        public string password {get; set;}
+    }
+
+    public async void OnValidLogin(EditContext context) {
+        Credentials credentials = new Credentials(model.email, model.password, null);
+
+            HttpResponseMessage resp = await client.PostAsJsonAsync("Credentials/login", credentials);
+            HttpContent content = resp.Content;
+            string jwt = await content.ReadAsStringAsync();
     }
 }
