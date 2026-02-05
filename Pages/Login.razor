@@ -5,7 +5,7 @@
 @using EPPSchedulerFrontend.DataClasses
 @using System.ComponentModel.DataAnnotations
 
-<EditForm Model="@model" OnValidSubmit="OnValidLogin"/>
+<EditForm Model="@model" OnValidSubmit="OnValidLogin">
 <DataAnnotationsValidator/>
 <PageTitle>Login</PageTitle>
 <MudContainer MaxWidth="MaxWidth.Small">
@@ -15,11 +15,12 @@
                 <MudText Typo="Typo.h2" Align="Align.Center">Login or Register</MudText>
             </MudItem>
             <MudItem xs="12">
-                <MudTextField @bind-Value="model.email" Label="Username" Variant="Variant.Outlined"></MudTextField>
+                <MudTextField @bind-Value="model.email" For="@(() => model.email)" Label="Username" Variant="Variant.Outlined"></MudTextField>
             </MudItem>
             <MudItem xs="12">
                 <MudTextField
                     @bind-Value="model.password"
+                    For="@(() => model.password)"
                     Label="Password"
                     Variant="Variant.Outlined"
                     InputType="@PasswordInput"
@@ -41,6 +42,7 @@
         </MudPaper>
     </MudGrid>
 </MudContainer>
+</EditForm>
 @code {
 
     private bool showPassword = false;
@@ -55,6 +57,14 @@
         showPassword = !showPassword;
     }
 
+    private async void OnValidLogin(EditContext context) {
+        Credentials credentials = new Credentials(model.email, model.password, null);
+
+            HttpResponseMessage resp = await client.PostAsJsonAsync("Credentials/login", credentials);
+            HttpContent content = resp.Content;
+            string jwt = await content.ReadAsStringAsync();
+    }
+
     public class LoginForm {
         [Required]
         [EmailAddress]
@@ -62,13 +72,5 @@
         [Required]
         [StringLength(30, ErrorMessage = "Password Must be at least 8 characters long", MinimumLength = 8)]
         public string password {get; set;}
-    }
-
-    public async void OnValidLogin(EditContext context) {
-        Credentials credentials = new Credentials(model.email, model.password, null);
-
-            HttpResponseMessage resp = await client.PostAsJsonAsync("Credentials/login", credentials);
-            HttpContent content = resp.Content;
-            string jwt = await content.ReadAsStringAsync();
     }
 }
