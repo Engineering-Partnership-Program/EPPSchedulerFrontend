@@ -4,12 +4,16 @@
 @inject ISnackbar snackbar
 @using System.ComponentModel.DataAnnotations
 
+<PageTitle>EPP Scheduler | Create Account</PageTitle>
 
 <EditForm Model="@model" OnValidSubmit="CreateAccountSubmit">
 <DataAnnotationsValidator/>
     <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center mud-width-full"  style="height:50vh; min-height: 300px;">
         <MudGrid Spacing="2" Justify="Justify.Center" Class="align-items-center">
             <MudPaper Class="pa-4">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h2" Align="Align.Center">Create Account</MudText>
+                </MudItem>
                 <MudItem xs="12">
                     <MudTextField @bind-Value="model.email" For="@(() => model.email)" Label="Username" Variant="Variant.Outlined"></MudTextField>
                 </MudItem>
