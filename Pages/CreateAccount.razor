@@ -3,6 +3,7 @@
 @inject HttpClient client
 @inject ISnackbar snackbar
 @using System.ComponentModel.DataAnnotations
+@using EPPSchedulerFrontend.DataClasses
 
 <PageTitle>EPP Scheduler | Create Account</PageTitle>
 
@@ -48,8 +49,13 @@
     {
         showPassword = !showPassword;
     }
-    private void CreateAccountSubmit() {
+    private async void CreateAccountSubmit() {
+        Credentials credentials = new Credentials(model.email, model.password, "User");
 
+        HttpResponseMessage resp = await client.PostAsJsonAsync("Credentials/create-account", credentials);
+        HttpContent content = resp.Content;
+        string jwt = await content.ReadAsStringAsync();
+        Console.WriteLine(jwt);
     }
     public class CreateAccountForm {
         [Required]

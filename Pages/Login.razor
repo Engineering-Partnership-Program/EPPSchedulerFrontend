@@ -61,9 +61,10 @@
     private async void OnValidLogin(EditContext context) {
         Credentials credentials = new Credentials(model.email, model.password, null);
 
-            HttpResponseMessage resp = await client.PostAsJsonAsync("Credentials/login", credentials);
-            HttpContent content = resp.Content;
-            string jwt = await content.ReadAsStringAsync();
+        HttpResponseMessage resp = await client.PostAsJsonAsync("Credentials/login", credentials);
+        HttpContent content = resp.Content;
+        string jwt = await content.ReadAsStringAsync();
+        Console.WriteLine(jwt);
     }
 
     public class LoginForm {
