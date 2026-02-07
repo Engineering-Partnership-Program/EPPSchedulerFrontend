@@ -61,7 +61,7 @@
     private async void OnValidLogin(EditContext context) {
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
         
-        Credentials credentials = new Credentials(model.email, model.password, "User");
+        Credentials credentials = new Credentials(model.email, model.password, null);
 
         HttpResponseMessage resp = await client.PostAsJsonAsync(requestUri: "api/Credentials/login", credentials);
 

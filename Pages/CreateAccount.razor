@@ -57,7 +57,7 @@
     private async void CreateAccountSubmit() {
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
 
-        Credentials credentials = new Credentials(model.email, model.password, "User");
+        Credentials credentials = new Credentials(model.email, model.password, Roles.User);
 
         HttpResponseMessage resp = await client.PostAsJsonAsync("api/Credentials/create-account", credentials);
 
