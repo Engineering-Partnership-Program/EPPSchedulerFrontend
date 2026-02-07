@@ -1,7 +1,7 @@
 ﻿@page "/"
 @inherits MainLayout
 @inject ISnackbar Snackbar
-@inject HttpClient client
+@inject IHttpClientFactory clientFactory
 @using EPPSchedulerFrontend.DataClasses
 @using System.ComponentModel.DataAnnotations
 
@@ -59,12 +59,24 @@
     }
 
     private async void OnValidLogin(EditContext context) {
-        Credentials credentials = new Credentials(model.email, model.password, null);
+        HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
+        
+        Credentials credentials = new Credentials(model.email, model.password, "User");
 
-        HttpResponseMessage resp = await client.PostAsJsonAsync("Credentials/login", credentials);
-        HttpContent content = resp.Content;
-        string jwt = await content.ReadAsStringAsync();
-        Console.WriteLine(jwt);
+        HttpResponseMessage resp = await client.PostAsJsonAsync(requestUri: "api/Credentials/login", credentials);
+
+        try {
+            resp.EnsureSuccessStatusCode();
+        } catch(HttpRequestException e) {
+            if (resp.StatusCode == System.Net.HttpStatusCode.NotFound) {
+                Snackbar.Add("The email is either incorrect or this account doesn't exit", Severity.Error);
+            } else if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized) {
+                Snackbar.Add("The password is incorrect please try again", Severity.Error);
+            } else {
+                throw e;
+            }
+            
+        }
     }
 
     public class LoginForm {

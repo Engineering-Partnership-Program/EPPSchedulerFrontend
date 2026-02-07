@@ -1,7 +1,7 @@
 @page "/create-account"
 @inherits MainLayout
-@inject HttpClient client
-@inject ISnackbar snackbar
+@inject IHttpClientFactory clientFactory
+@inject ISnackbar Snackbar
 @using System.ComponentModel.DataAnnotations
 @using EPPSchedulerFrontend.DataClasses
 
@@ -30,9 +30,14 @@
                         OnAdornmentClick="OnShowClick"
                         AdornmentAriaLabel="Show Password" />
                 </MudItem>
-                <MudItem xs="12">
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" FullWidth=true StartIcon="@Icons.Material.TwoTone.Create" Color="Color.Primary">Create Account</MudButton>
-                </MudItem>
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" FullWidth=true StartIcon="@Icons.Material.TwoTone.Create" Color="Color.Primary">Create Account</MudButton>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudButton Variant="Variant.Filled" Href="/" FullWidth=true StartIcon="@Icons.Material.TwoTone.Login" Color="Color.Primary">Login</MudButton>
+                    </MudItem>
+                </MudGrid>
             </MudPaper>
         </MudGrid>
     </MudContainer>
@@ -50,12 +55,21 @@
         showPassword = !showPassword;
     }
     private async void CreateAccountSubmit() {
+        HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
+
         Credentials credentials = new Credentials(model.email, model.password, "User");
 
-        HttpResponseMessage resp = await client.PostAsJsonAsync("Credentials/create-account", credentials);
-        HttpContent content = resp.Content;
-        string jwt = await content.ReadAsStringAsync();
-        Console.WriteLine(jwt);
+        HttpResponseMessage resp = await client.PostAsJsonAsync("api/Credentials/create-account", credentials);
+
+        try {
+            resp.EnsureSuccessStatusCode();
+        } catch (HttpRequestException e) {
+            if(resp.StatusCode == System.Net.HttpStatusCode.Conflict) {
+                Snackbar.Add("This email already has an account associated with it please log in", Severity.Error);
+            } else {
+                throw e;
+            }
+        }
     }
     public class CreateAccountForm {
         [Required]
