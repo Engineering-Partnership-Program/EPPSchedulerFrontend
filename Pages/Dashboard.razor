@@ -1,0 +1,45 @@
+@page "/dashboard"
+@using EPPSchedulerFrontend.DataClasses
+
+@inject IHttpClientFactory clientFactory
+@inject ISnackbar Snackbar
+@inject NavigationManager navigationManager
+
+<PageTitle>EPP Scheduler | Dashboard</PageTitle>
+
+<MudContainer>
+    Hello World
+</MudContainer>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
+
+        HttpResponseMessage resp = await client.PostAsync("api/Credentials/verify", null);
+        Console.WriteLine("Verification Complete");
+        try
+        {
+            resp.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException)
+        {
+            if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                Snackbar.Add("Session Expired");
+            }
+            else
+            {
+                Snackbar.Add(message: "There was an error during authentication");
+            }
+            navigationManager.NavigateTo("/", replace: true);
+        }
+
+        Roles role = await resp.Content.ReadFromJsonAsync<Roles>();
+
+        if (role == Roles.Admin || role == Roles.Manager)
+        {
+            navigationManager.NavigateTo("admin-dashboard");
+        }
+    }
+}

@@ -9,10 +9,11 @@ public enum Roles
 
 public static class RoleTools
 {
-    public static string RoleConverter(Roles? role)
+    public static string RoleToString(Roles? role)
     {
         ArgumentNullException.ThrowIfNull(role);
-        switch(role)
+
+        switch (role)
         {
             case Roles.User:
                 return "User";
@@ -24,4 +25,21 @@ public static class RoleTools
                 throw new ArgumentException("Enum value not in known list of roles");
         }
     }
-} 
+
+    public static Roles StringToRole(string? role)
+    {
+        ArgumentNullException.ThrowIfNull(role);
+
+        switch (role)
+        {
+            case "User":
+                return Roles.User;
+            case "Manager":
+                return Roles.Manager;
+            case "Admin":
+                return Roles.Admin;
+            default:
+                throw new ArgumentException($"{role} does not have a corresponding enum value");
+        }
+    }
+}

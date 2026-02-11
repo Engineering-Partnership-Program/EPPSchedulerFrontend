@@ -2,40 +2,39 @@
 @inherits MainLayout
 @inject IHttpClientFactory clientFactory
 @inject ISnackbar Snackbar
+@inject NavigationManager navigationManager
 @using System.ComponentModel.DataAnnotations
 @using EPPSchedulerFrontend.DataClasses
 
 <PageTitle>EPP Scheduler | Create Account</PageTitle>
 
 <EditForm Model="@model" OnValidSubmit="CreateAccountSubmit">
-<DataAnnotationsValidator/>
-    <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center mud-width-full"  style="height:50vh; min-height: 300px;">
+    <DataAnnotationsValidator />
+    <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center mud-width-full"
+                  style="height:50vh; min-height: 300px;">
         <MudGrid Spacing="2" Justify="Justify.Center" Class="align-items-center">
             <MudPaper Class="pa-4">
                 <MudItem xs="12">
                     <MudText Typo="Typo.h2" Align="Align.Center">Create Account</MudText>
                 </MudItem>
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="model.email" For="@(() => model.email)" Label="Username" Variant="Variant.Outlined"></MudTextField>
+                    <MudTextField @bind-Value="model.email" For="@(() => model.email)" Label="Username"
+                                  Variant="Variant.Outlined"></MudTextField>
                 </MudItem>
                 <MudItem xs="12">
-                    <MudTextField
-                        @bind-Value="model.password"
-                        For="@(() => model.password)"
-                        Label="Password"
-                        Variant="Variant.Outlined"
-                        InputType="@PasswordInput"
-                        Adornment="Adornment.End"
-                        AdornmentIcon="@PasswordInputIcon"
-                        OnAdornmentClick="OnShowClick"
-                        AdornmentAriaLabel="Show Password" />
+                    <MudTextField                        @bind-Value="model.password"                        For="@(() => model.password)"                        Label="Password"
+                                                         Variant="Variant.Outlined"                        InputType="@PasswordInput"                        Adornment="Adornment.End"
+                                                         AdornmentIcon="@PasswordInputIcon"                        OnAdornmentClick="OnShowClick"
+                                                         AdornmentAriaLabel="Show Password" />
                 </MudItem>
                 <MudGrid>
                     <MudItem xs="6">
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" FullWidth=true StartIcon="@Icons.Material.TwoTone.Create" Color="Color.Primary">Create Account</MudButton>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" FullWidth=true
+                                   StartIcon="@Icons.Material.TwoTone.Create" Color="Color.Primary">Create Account</MudButton>
                     </MudItem>
                     <MudItem xs="6">
-                        <MudButton Variant="Variant.Filled" Href="/" FullWidth=true StartIcon="@Icons.Material.TwoTone.Login" Color="Color.Primary">Login</MudButton>
+                        <MudButton Variant="Variant.Filled" Href="/" FullWidth=true
+                                   StartIcon="@Icons.Material.TwoTone.Login" Color="Color.Primary">Login</MudButton>
                     </MudItem>
                 </MudGrid>
             </MudPaper>
@@ -47,37 +46,52 @@
     private bool showPassword = false;
 
     private InputType PasswordInput => showPassword ? InputType.Text : MudBlazor.InputType.Password;
-    private string PasswordInputIcon => showPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+    private string PasswordInputIcon => showPassword ? Icons.Material.Filled.Visibility :
+Icons.Material.Filled.VisibilityOff;
     private CreateAccountForm model = new CreateAccountForm();
 
     private void OnShowClick()
     {
         showPassword = !showPassword;
     }
-    private async void CreateAccountSubmit() {
+    private async void CreateAccountSubmit()
+    {
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
 
         Credentials credentials = new Credentials(model.email, model.password, Roles.User);
 
         HttpResponseMessage resp = await client.PostAsJsonAsync("api/Credentials/create-account", credentials);
 
-        try {
+        try
+        {
             resp.EnsureSuccessStatusCode();
-        } catch (HttpRequestException e) {
-            if(resp.StatusCode == System.Net.HttpStatusCode.Conflict) {
+        }
+        catch (HttpRequestException e)
+        {
+            if (resp.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
                 Snackbar.Add("This email already has an account associated with it please log in", Severity.Error);
-            } else {
+            }
+            else
+            {
                 throw e;
             }
         }
+
+        if (resp.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            Console.WriteLine("It worked navigating now");
+            navigationManager.NavigateTo("dashboard", replace: true);
+        }
     }
-    public class CreateAccountForm {
+    public class CreateAccountForm
+    {
         [Required]
         [EmailAddress]
-        public string email {get; set;}
+        public string email { get; set; }
 
         [Required]
         [StringLength(30, ErrorMessage = "Password must be at least 12 characters", MinimumLength = 12)]
-        public string password {get; set;}
+        public string password { get; set; }
     }
 }
