@@ -6,16 +6,23 @@
 @using EPPSchedulerFrontend.DataClasses
 
 @code {
-    protected override async Task OnInitializedAsync() {
+    protected override async Task OnInitializedAsync()
+    {
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
 
         HttpResponseMessage resp = await client.PostAsync("api/Credentials/verify-manager", null);
         Console.WriteLine("Verification Complete");
-        try {
+        try
+        {
             resp.EnsureSuccessStatusCode();
-        } catch(HttpRequestException) {
-            if(resp.StatusCode == System.Net.HttpStatusCode.Unauthorized) {
-            } else {
+        }
+        catch (HttpRequestException)
+        {
+            if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+            }
+            else
+            {
                 Snackbar.Add(message: "There was an error during authentication");
             }
             navigationManager.NavigateTo("/", replace: true);

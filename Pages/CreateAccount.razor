@@ -22,10 +22,10 @@
                                   Variant="Variant.Outlined"></MudTextField>
                 </MudItem>
                 <MudItem xs="12">
-                    <MudTextField                        @bind-Value="model.password"                        For="@(() => model.password)"                        Label="Password"
-                                                         Variant="Variant.Outlined"                        InputType="@PasswordInput"                        Adornment="Adornment.End"
-                                                         AdornmentIcon="@PasswordInputIcon"                        OnAdornmentClick="OnShowClick"
-                                                         AdornmentAriaLabel="Show Password" />
+                    <MudTextField @bind-Value="model.password" For="@(() => model.password)" Label="Password"
+                                  Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End"
+                                  AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="OnShowClick"
+                                  AdornmentAriaLabel="Show Password" />
                 </MudItem>
                 <MudGrid>
                     <MudItem xs="6">
@@ -88,10 +88,10 @@ Icons.Material.Filled.VisibilityOff;
     {
         [Required]
         [EmailAddress]
-        public string email { get; set; }
+        public string? email { get; set; }
 
         [Required]
         [StringLength(30, ErrorMessage = "Password must be at least 12 characters", MinimumLength = 12)]
-        public string password { get; set; }
+        public string? password { get; set; }
     }
 }

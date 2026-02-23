@@ -4,7 +4,7 @@ public enum Roles
 {
     User,
     Manager,
-    Admin
+    Admin,
 }
 
 public static class RoleTools

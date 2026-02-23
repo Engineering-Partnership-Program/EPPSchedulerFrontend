@@ -1,5 +1,8 @@
 @page "/dashboard"
 @using EPPSchedulerFrontend.DataClasses
+@using MudBlazor.Interop
+@using System.Runtime.CompilerServices
+@using System.Text.Json
 
 @inject IHttpClientFactory clientFactory
 @inject ISnackbar Snackbar
@@ -8,10 +11,35 @@
 <PageTitle>EPP Scheduler | Dashboard</PageTitle>
 
 <MudContainer>
-    Hello World
+    <MudDataGrid Items="@Elements">
+        <Columns>
+            <PropertyColumn Property="x => x.sundaySchedule.SelectMany(y => y.Key.ToString())" Title="Sunday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.mondaySchedule.SelectMany(y => y.Key.ToString())" Title="Monday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.tuesdaySchedule.SelectMany(y => y.Key.ToString())" Title="Tuesday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.wednesdaySchedule.SelectMany(y => y.Key.ToString())" Title="Wednesday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.thursdaySchedule.SelectMany(y => y.Key.ToString())" Title="Thursday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.fridaySchedule.SelectMany(y => y.Key.ToString())" Title="Friday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.saturdaySchedule.SelectMany(y => y.Key.ToString())" Title="Saturday">
+            </PropertyColumn>
+        </Columns>
+    </MudDataGrid>
 </MudContainer>
 
 @code {
+
+    private IEnumerable<ScheduleMap> Elements = new List<ScheduleMap>();
+
+    private Func<ScheduleMap, string> _cellStyleFunc => x =>
+    {
+        string style = String.Empty;
+        return style;
+    };
     protected override async Task OnInitializedAsync()
     {
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
@@ -40,6 +68,28 @@
         if (role == Roles.Admin || role == Roles.Manager)
         {
             navigationManager.NavigateTo("admin-dashboard");
+        }
+
+        try
+        {
+            List<TimeInterval> shopHours = new List<TimeInterval>() { new TimeInterval(DayOfWeek.Monday, new TimeOnly(hour: 8,
+minute: 0), new TimeOnly(hour: 16, minute: 0)) };
+
+            List<NestedTimeInterval>? scheduleResponse = await
+client.GetFromJsonAsync<List<NestedTimeInterval>>("api/EmployeeProfile/get-schedule");
+            if (scheduleResponse == null)
+            {
+                Snackbar.Add("No schedule data was found", Severity.Error);
+                navigationManager.NavigateTo("/dashboard");
+            }
+            else
+            {
+                Elements = new List<ScheduleMap>() { new ScheduleMap(scheduleResponse, shopHours) };
+            }
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("There was an error while retrieving the schedule, please try again", Severity.Error);
         }
     }
 }

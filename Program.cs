@@ -1,8 +1,8 @@
+using EPPSchedulerFrontend;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using EPPSchedulerFrontend;
-using MudBlazor.Services;
 using MudBlazor;
+using MudBlazor.Services;
 
 WebAssemblyHostBuilder builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -10,12 +10,17 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddTransient<CookieHandler>();
 
-builder.Services.AddHttpClient("EPPSchedulerBackend", client =>
-{
-    client.BaseAddress = new Uri("https://localhost:7016");
-}).AddHttpMessageHandler<CookieHandler>();
+builder
+    .Services.AddHttpClient(
+        "EPPSchedulerBackend",
+        client =>
+        {
+            client.BaseAddress = new Uri("https://localhost:7016");
+        }
+    )
+    .AddHttpMessageHandler<CookieHandler>();
 
-// builder.Services.AddScoped(sp => 
+// builder.Services.AddScoped(sp =>
 // {
 //     HttpClient httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7016") };
 //     return httpClient;
