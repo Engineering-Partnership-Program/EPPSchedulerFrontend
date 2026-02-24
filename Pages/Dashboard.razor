@@ -13,19 +13,21 @@
 <MudContainer>
     <MudDataGrid Items="@Elements">
         <Columns>
-            <PropertyColumn Property="x => x.sundaySchedule.SelectMany(y => y.Key.ToString())" Title="Sunday">
+            <PropertyColumn Property="x => x.timeSlot.ToString()" Title="Time">
             </PropertyColumn>
-            <PropertyColumn Property="x => x.mondaySchedule.SelectMany(y => y.Key.ToString())" Title="Monday">
+            <PropertyColumn Property="x => x.sunday.ToString()" Title="Sunday">
             </PropertyColumn>
-            <PropertyColumn Property="x => x.tuesdaySchedule.SelectMany(y => y.Key.ToString())" Title="Tuesday">
+            <PropertyColumn Property="x => x.monday.ToString()" Title="Monday">
             </PropertyColumn>
-            <PropertyColumn Property="x => x.wednesdaySchedule.SelectMany(y => y.Key.ToString())" Title="Wednesday">
+            <PropertyColumn Property="x => x.tuesday.ToString()" Title="Tuesday">
             </PropertyColumn>
-            <PropertyColumn Property="x => x.thursdaySchedule.SelectMany(y => y.Key.ToString())" Title="Thursday">
+            <PropertyColumn Property="x => x.wednesday.ToString()" Title="Wednesday">
             </PropertyColumn>
-            <PropertyColumn Property="x => x.fridaySchedule.SelectMany(y => y.Key.ToString())" Title="Friday">
+            <PropertyColumn Property="x => x.thursday.ToString()" Title="Thursday">
             </PropertyColumn>
-            <PropertyColumn Property="x => x.saturdaySchedule.SelectMany(y => y.Key.ToString())" Title="Saturday">
+            <PropertyColumn Property="x => x.friday.ToString()" Title="Friday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.saturday.ToString()" Title="Saturday">
             </PropertyColumn>
         </Columns>
     </MudDataGrid>
@@ -33,13 +35,53 @@
 
 @code {
 
-    private IEnumerable<ScheduleMap> Elements = new List<ScheduleMap>();
+    private IEnumerable<TimeSlot> Elements = new List<TimeSlot>();
 
     private Func<ScheduleMap, string> _cellStyleFunc => x =>
     {
         string style = String.Empty;
         return style;
     };
+
+    private async Task _updateSchedule(HttpClient client)
+    {
+        try
+        {
+            HttpResponseMessage resp = await
+                client.GetAsync("api/ScheduleProfile/GetActiveScheduleProfile");
+
+            if (resp.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                Snackbar.Add("Your schedule is not available", Severity.Info);
+            }
+            else
+            {
+                Tuple<List<TimeInterval>, List<NestedTimeInterval>>? activeProfile =
+                    JsonSerializer.Deserialize<Tuple<List<TimeInterval>, List<NestedTimeInterval>>>(resp.Content.ReadAsStream());
+                List<NestedTimeInterval>? scheduleResponse = await
+                    client.GetFromJsonAsync<List<NestedTimeInterval>>("api/EmployeeProfile/get-schedule");
+                if (scheduleResponse == null || activeProfile == null)
+                {
+                    Snackbar.Add("No schedule data was found, please try again", Severity.Error);
+                }
+                else
+                {
+                    ScheduleMap scheduleMap = new ScheduleMap(scheduleResponse, activeProfile.Item1);
+                    foreach (TimeInterval currentHours in activeProfile.Item1)
+                    {
+                        for (TimeOnly i = currentHours.startTime; i < currentHours.endTime; i.AddMinutes(30))
+                        {
+                            Elements.Append(new TimeSlot(scheduleMap, i));
+                        }
+                    }
+                }
+            }
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("There was an error while retrieving the schedule, please try again", Severity.Error);
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
@@ -70,26 +112,6 @@
             navigationManager.NavigateTo("admin-dashboard");
         }
 
-        try
-        {
-            List<TimeInterval> shopHours = new List<TimeInterval>() { new TimeInterval(DayOfWeek.Monday, new TimeOnly(hour: 8,
-minute: 0), new TimeOnly(hour: 16, minute: 0)) };
-
-            List<NestedTimeInterval>? scheduleResponse = await
-client.GetFromJsonAsync<List<NestedTimeInterval>>("api/EmployeeProfile/get-schedule");
-            if (scheduleResponse == null)
-            {
-                Snackbar.Add("No schedule data was found", Severity.Error);
-                navigationManager.NavigateTo("/dashboard");
-            }
-            else
-            {
-                Elements = new List<ScheduleMap>() { new ScheduleMap(scheduleResponse, shopHours) };
-            }
-        }
-        catch (HttpRequestException)
-        {
-            Snackbar.Add("There was an error while retrieving the schedule, please try again", Severity.Error);
-        }
+        await _updateSchedule(client);
     }
 }

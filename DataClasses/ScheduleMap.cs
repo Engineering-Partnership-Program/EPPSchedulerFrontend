@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Principal;
+using Microsoft.JSInterop.Infrastructure;
 using MudBlazor;
 
 namespace EPPSchedulerFrontend.DataClasses;
@@ -41,7 +42,7 @@ class ScheduleMap
                 currentTime.AddMinutes(30)
             )
             {
-                NestedTimeInterval currentSchedule = fullSchedule.FirstOrDefault(s =>
+                NestedTimeInterval currentSchedule = fullSchedule.First(s =>
                     s.day == currentShopHours.day
                 );
                 if (currentSchedule == null)
@@ -84,5 +85,31 @@ class ScheduleMap
                     break;
             }
         }
+    }
+}
+
+class TimeSlot
+{
+    public required TimeOnly timeSlot { get; set; }
+    public required SlotStatus sunday { get; set; }
+    public required SlotStatus monday { get; set; }
+    public required SlotStatus tuesday { get; set; }
+    public required SlotStatus wednesday { get; set; }
+    public required SlotStatus thursday { get; set; }
+    public required SlotStatus friday { get; set; }
+    public required SlotStatus saturday { get; set; }
+
+    [SetsRequiredMembers]
+    public TimeSlot(ScheduleMap scheduleMap, TimeOnly timeSlot)
+    {
+        this.timeSlot = timeSlot;
+
+        sunday = scheduleMap.sundaySchedule.GetValueOrDefault(timeSlot);
+        monday = scheduleMap.mondaySchedule.GetValueOrDefault(timeSlot);
+        tuesday = scheduleMap.tuesdaySchedule.GetValueOrDefault(timeSlot);
+        wednesday = scheduleMap.wednesdaySchedule.GetValueOrDefault(timeSlot);
+        thursday = scheduleMap.thursdaySchedule.GetValueOrDefault(timeSlot);
+        friday = scheduleMap.fridaySchedule.GetValueOrDefault(timeSlot);
+        saturday = scheduleMap.saturdaySchedule.GetValueOrDefault(timeSlot);
     }
 }
