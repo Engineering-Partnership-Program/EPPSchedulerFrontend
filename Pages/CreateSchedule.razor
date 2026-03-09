@@ -1,0 +1,154 @@
+@layout AdminLayout
+
+@inherits BaseComponent
+
+@page "/create-schedule"
+@using System.Security.Principal
+@using System.ComponentModel.DataAnnotations
+@using EPPSchedulerFrontend.DataClasses
+@using System.Runtime.CompilerServices
+
+<MudSwitch @bind-Value="_isActive"
+           Label="@(_isActive ? "Save and Activate These Settings on Submit" : "Only Save These Settings")"></MudSwitch>
+<MudSwitch @bind-Value="_manual" Label="@(_manual ? "Create Schedule Programatically" : "Generate Schedule Manually")">
+</MudSwitch>
+@if (_manual)
+{
+    <MudSwitch @bind-Value="_pairByExperience"
+               Label="@(_pairByExperience ? "Pair employees by experience" : "Don't pair employees by experience")"></MudSwitch>
+    <MudButton OnClick="AddShopHourElement">Add Shop Time</MudButton>
+    <MudButton OnClick="RemoveShopHourElement">Remove Shop Time</MudButton>
+    @for (int i = 0; i < _numShopHourElements; i++)
+    {
+        int index = i;
+        <MudSelect @bind-Value="_shopDays[index]">
+            @foreach (string day in Enum.GetNames(typeof(DayOfWeek)))
+            {
+                <MudSelectItem Value="@day">@day</MudSelectItem>
+            }
+        </MudSelect>
+        <MudTimePicker Label="Begin" AmPm="true" @bind-Time="_shopStartTimes[index]" @ref="_shopStartPickers[index]"
+                       AutoClose="false">
+            <PickerActions>
+                <MudButton Class="mr-auto align-self-start" OnClick="@(() => _shopStartPickers[index].ClearAsync())">Clear
+                </MudButton>
+                <MudButton Color="Color.Primary" OnClick="@(() => _shopStartPickers[index].CloseAsync())">OK</MudButton>
+            </PickerActions>
+        </MudTimePicker>
+        <MudTimePicker Label="End" AmPm="true" @bind-Time="_shopEndTimes[index]" @ref="_shopEndPickers[index]"
+                       AutoClose="false">
+            <PickerActions>
+                <MudButton Class="mr-auto align-self-start" OnClick="@(() => _shopEndPickers[index].ClearAsync())">Clear
+                </MudButton>
+                <MudButton Color="Color.Primary" OnClick="@(() => _shopEndPickers[index].CloseAsync())">OK</MudButton>
+            </PickerActions>
+        </MudTimePicker>
+    }
+    <MudButton OnClick="AddFabTimeElement">Add Fab Time</MudButton>
+    <MudButton OnClick="RemoveFabTimeElement">Remove Fab Time</MudButton>
+    @for (int i = 0; i < _numFabElements; i++)
+    {
+        int index = i;
+        <MudSelect @bind-Value="_fabDays[index]">
+            @foreach (string day in Enum.GetNames(typeof(DayOfWeek)))
+            {
+                <MudSelectItem Value="@day">@day</MudSelectItem>
+            }
+        </MudSelect>
+        <MudTimePicker Label="Begin" AmPm="true" @bind-Time="_fabStartTimes[index]" @ref="_fabStartPickers[index]"
+                       AutoClose="false">
+            <PickerActions>
+                <MudButton Class="mr-auto align-self-start" OnClick="@(() => _fabStartPickers[index].ClearAsync())">Clear
+                </MudButton>
+                <MudButton Color="Color.Primary" OnClick="@(() => _fabStartPickers[index].CloseAsync())">OK</MudButton>
+            </PickerActions>
+        </MudTimePicker>
+        <MudTimePicker Label="End" AmPm="true" @bind-Time="_fabEndTimes[index]" @ref="_fabEndPickers[index]" AutoClose="false">
+            <PickerActions>
+                <MudButton Class="mr-auto align-self-start" OnClick="@(() => _fabEndPickers[index].ClearAsync())">Clear
+                </MudButton>
+                <MudButton Color="Color.Primary" OnClick="@(() => _fabEndPickers[index].CloseAsync())">OK</MudButton>
+            </PickerActions>
+        </MudTimePicker>
+    }
+
+    <MudNumericField @bind-Value="_maxConcurrentEmployees"
+                     Label="Enter the maximum number of employees allowed to work at a time" />
+    <MudNumericField @bind-Value="_maxTotalHours" Label="Maximum total number of hours allowed across all employees" />
+    <MudNumericField @bind-Value="_minTotalHours" Label="Minimum total number of hours allowed across all employees" />
+    <MudNumericField @bind-Value="_maxHoursPerEmployee" Label="Maximum number of hours allowed for any given employee" />
+}
+
+<MudButton OnClick="OnScheduleCreate">Create</MudButton>
+
+@code {
+    private MudForm _form;
+    private bool _success;
+    private string[] _errors = [];
+    private bool _isActive = true;
+    private bool _manual = false;
+    private bool _pairByExperience;
+    private int _maxConcurrentEmployees;
+    private float _maxTotalHours;
+    private float _minTotalHours;
+    private float _maxHoursPerEmployee;
+    private string[] _shopDays = new string[7];
+    private TimeSpan?[] _shopStartTimes = new TimeSpan?[7];
+    private TimeSpan?[] _shopEndTimes = new TimeSpan?[7];
+
+    private string[] _fabDays = new string[7];
+    private TimeSpan?[] _fabStartTimes = new TimeSpan?[7];
+    private TimeSpan?[] _fabEndTimes = new TimeSpan?[7];
+
+    private int _numShopHourElements = 1;
+    private int _numFabElements = 1;
+
+    private MudTimePicker[] _shopStartPickers = new MudTimePicker[7];
+    private MudTimePicker[] _shopEndPickers = new MudTimePicker[7];
+    private MudTimePicker[] _fabStartPickers = new MudTimePicker[7];
+    private MudTimePicker[] _fabEndPickers = new MudTimePicker[7];
+
+    public void AddShopHourElement()
+    {
+        if (_numShopHourElements >= 7)
+        {
+            _numShopHourElements = 7;
+            return;
+        }
+        _numShopHourElements++;
+    }
+
+    public void RemoveShopHourElement()
+    {
+        if (_numShopHourElements <= 1)
+        {
+            _numShopHourElements = 1;
+            return;
+        }
+        _numShopHourElements--;
+    }
+
+    public void AddFabTimeElement()
+    {
+        if (_numFabElements >= 7)
+        {
+            _numFabElements = 7;
+            return;
+        }
+        _numFabElements++;
+    }
+
+    public void RemoveFabTimeElement()
+    {
+        if (_numFabElements <= 1)
+        {
+            _numFabElements = 1;
+            return;
+        }
+        _numFabElements--;
+    }
+    public void OnScheduleCreate()
+    {
+        snackbar.Add("New schedule profile has been created", Severity.Success);
+    }
+}

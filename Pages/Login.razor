@@ -1,8 +1,6 @@
 ﻿@page "/"
-@inherits MainLayout
-@inject ISnackbar Snackbar
-@inject IHttpClientFactory clientFactory
-@inject NavigationManager navigationManager
+
+@inherits BaseComponent
 @using EPPSchedulerFrontend.DataClasses
 @using System.ComponentModel.DataAnnotations
 @using System.Net
@@ -62,7 +60,18 @@ Icons.Material.Filled.VisibilityOff;
 
     private async void OnValidLogin(EditContext context)
     {
+        if (clientFactory is null || snackbar is null || navigationManager is null)
+        {
+            return;
+        }
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
+
+        if (model.email is null || model.password is null)
+        {
+            snackbar.Add("There was an error while attempting to get your username and password, please refresh and try again",
+Severity.Error);
+            return;
+        }
 
         Credentials credentials = new Credentials(model.email, model.password, null);
 
@@ -76,11 +85,11 @@ Icons.Material.Filled.VisibilityOff;
         {
             if (resp.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                Snackbar.Add("The email is either incorrect or this account doesn't exit", Severity.Error);
+                snackbar.Add("The email is either incorrect or this account doesn't exit", Severity.Error);
             }
             else if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                Snackbar.Add("The password is incorrect please try again", Severity.Error);
+                snackbar.Add("The password is incorrect please try again", Severity.Error);
             }
             else
             {

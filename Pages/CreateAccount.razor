@@ -1,8 +1,5 @@
 @page "/create-account"
-@inherits MainLayout
-@inject IHttpClientFactory clientFactory
-@inject ISnackbar Snackbar
-@inject NavigationManager navigationManager
+@inherits BaseComponent
 @using System.ComponentModel.DataAnnotations
 @using EPPSchedulerFrontend.DataClasses
 
@@ -56,8 +53,17 @@ Icons.Material.Filled.VisibilityOff;
     }
     private async void CreateAccountSubmit()
     {
+        if (clientFactory is null || snackbar is null || navigationManager is null)
+        {
+            return;
+        }
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
 
+        if (model.email is null || model.password is null)
+        {
+            snackbar.Add("THere was an errow while attempting to read your email and password, please reload the page and try again", Severity.Error);
+            return;
+        }
         Credentials credentials = new Credentials(model.email, model.password, Roles.User);
 
         HttpResponseMessage resp = await client.PostAsJsonAsync("api/Credentials/create-account", credentials);
@@ -70,7 +76,7 @@ Icons.Material.Filled.VisibilityOff;
         {
             if (resp.StatusCode == System.Net.HttpStatusCode.Conflict)
             {
-                Snackbar.Add("This email already has an account associated with it please log in", Severity.Error);
+                snackbar.Add("This email already has an account associated with it please log in", Severity.Error);
             }
             else
             {

@@ -1,4 +1,5 @@
 using EPPSchedulerFrontend;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
@@ -20,14 +21,6 @@ builder
     )
     .AddHttpMessageHandler<CookieHandler>();
 
-// builder.Services.AddScoped(sp =>
-// {
-//     HttpClient httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7016") };
-//     return httpClient;
-// });
-
-// builder.Services.AddMudServices();
-
 builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopCenter;
@@ -40,6 +33,10 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.ShowTransitionDuration = 500;
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
+builder.Services.AddAuthorizationCore();
+
+// builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationService>();
 
 WebAssemblyHost app = builder.Build();
 

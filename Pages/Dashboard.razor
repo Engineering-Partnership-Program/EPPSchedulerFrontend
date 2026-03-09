@@ -3,35 +3,42 @@
 @using MudBlazor.Interop
 @using System.Runtime.CompilerServices
 @using System.Text.Json
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 
-@inject IHttpClientFactory clientFactory
-@inject ISnackbar Snackbar
-@inject NavigationManager navigationManager
+@inherits BaseComponent
 
 <PageTitle>EPP Scheduler | Dashboard</PageTitle>
 
-<MudContainer>
-    <MudDataGrid Items="@Elements">
-        <Columns>
-            <PropertyColumn Property="x => x.timeSlot.ToString()" Title="Time">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.sunday.ToString()" Title="Sunday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.monday.ToString()" Title="Monday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.tuesday.ToString()" Title="Tuesday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.wednesday.ToString()" Title="Wednesday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.thursday.ToString()" Title="Thursday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.friday.ToString()" Title="Friday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.saturday.ToString()" Title="Saturday">
-            </PropertyColumn>
-        </Columns>
-    </MudDataGrid>
-</MudContainer>
+<AuthorizeView>
+    <Authorized>
+        <MudContainer>
+            <MudDataGrid Items="@Elements">
+                <Columns>
+                    <PropertyColumn Property="x => x.timeSlot.ToString()" Title="Time">
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.sunday.ToString()" Title="Sunday">
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.monday.ToString()" Title="Monday">
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.tuesday.ToString()" Title="Tuesday">
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.wednesday.ToString()" Title="Wednesday">
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.thursday.ToString()" Title="Thursday">
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.friday.ToString()" Title="Friday">
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.saturday.ToString()" Title="Saturday">
+                    </PropertyColumn>
+                </Columns>
+            </MudDataGrid>
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        You are not authorized to be here
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
 
@@ -45,14 +52,19 @@
 
     private async Task _updateSchedule(HttpClient client)
     {
+        if (snackbar is null || navigationManager is null)
+        {
+            return;
+        }
         try
         {
+
             HttpResponseMessage resp = await
                 client.GetAsync("api/ScheduleProfile/GetActiveScheduleProfile");
 
             if (resp.StatusCode == System.Net.HttpStatusCode.NoContent)
             {
-                Snackbar.Add("Your schedule is not available", Severity.Info);
+                snackbar.Add("Your schedule is not available", Severity.Info);
             }
             else
             {
@@ -62,7 +74,7 @@
                     client.GetFromJsonAsync<List<NestedTimeInterval>>("api/EmployeeProfile/get-schedule");
                 if (scheduleResponse == null || activeProfile == null)
                 {
-                    Snackbar.Add("No schedule data was found, please try again", Severity.Error);
+                    snackbar.Add("No schedule data was found, please try again", Severity.Error);
                 }
                 else
                 {
@@ -79,14 +91,26 @@
         }
         catch (HttpRequestException)
         {
-            Snackbar.Add("There was an error while retrieving the schedule, please try again", Severity.Error);
+            snackbar.Add("There was an error while retrieving the schedule, please try again", Severity.Error);
         }
     }
     protected override async Task OnInitializedAsync()
     {
+        if (authenticationService is null || clientFactory is null || navigationManager is null)
+        {
+            return;
+        }
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
 
-        HttpResponseMessage resp = await client.PostAsync("api/Credentials/verify", null);
+        AuthenticationState authState = await authenticationService.GetAuthenticationStateAsync();
+
+        if (authState.User.Claims.Any(c => c.Value == "Admin" || c.Value == "Manager"))
+        {
+            navigationManager.NavigateTo("admin-dashboard");
+            return;
+        }
+
+        @* HttpResponseMessage resp = await client.PostAsync("api/Credentials/verify", null);
         Console.WriteLine("Verification Complete");
         try
         {
@@ -96,11 +120,11 @@
         {
             if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                Snackbar.Add("Session Expired");
+                snackbar.Add("Session Expired");
             }
             else
             {
-                Snackbar.Add(message: "There was an error during authentication");
+                snackbar.Add(message: "There was an error during authentication");
             }
             navigationManager.NavigateTo("/", replace: true);
         }
@@ -110,7 +134,8 @@
         if (role == Roles.Admin || role == Roles.Manager)
         {
             navigationManager.NavigateTo("admin-dashboard");
-        }
+            return;
+        } *@
 
         await _updateSchedule(client);
     }

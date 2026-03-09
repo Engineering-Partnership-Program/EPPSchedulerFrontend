@@ -1,12 +1,19 @@
 @page "/admin-dashboard"
-
-@inject IHttpClientFactory clientFactory
-@inject ISnackbar Snackbar
-@inject NavigationManager navigationManager
+@layout AdminLayout
+@inherits BaseComponent
 @using EPPSchedulerFrontend.DataClasses
 
+<PageTitle>EPP Scheduler | Admin Dashboard</PageTitle>
+
+Hello something is happening
+
 @code {
-    protected override async Task OnInitializedAsync()
+
+    public void OnCreateNewSchedule()
+    {
+        Console.WriteLine("I have been clicked");
+    }
+    @* protected override async Task OnInitializedAsync()
     {
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
 
@@ -18,14 +25,15 @@
         }
         catch (HttpRequestException)
         {
-            if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized || resp.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
+                snackbar.Add("Not authorized to be here!", Severity.Error);
             }
             else
             {
-                Snackbar.Add(message: "There was an error during authentication");
+                snackbar.Add(message: "There was an error during authentication", Severity.Error);
             }
             navigationManager.NavigateTo("/", replace: true);
         }
-    }
+    } *@
 }
