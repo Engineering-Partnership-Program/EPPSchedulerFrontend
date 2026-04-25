@@ -5,18 +5,9 @@
 @layout MainLayout
 @inject AuthenticationStateProvider authenticationService
 
-<AuthorizeView Roles="Admin,Manager">
+<AuthorizeView Roles="Admin,Manager,User">
     <Authorized>
         <div style="display:flex">
-            <MudPaper Width="20%" Style="height: calc(100vh - 64px)">
-                <MudNavMenu Class="mud-width-full">
-                    <MudText Typo="Typo.h5" Class="px-4" Style="padding: 10px">Welcome @(_username ?? "")</MudText>
-                    <MudDivider Class="my-1"></MudDivider>
-                    <MudNavLink Href="/admin-dashboard" Icon="@Icons.Material.TwoTone.Dashboard">Admin Dashboard
-                    </MudNavLink>
-                    <MudNavLink Href="/create-schedule" Icon="@Icons.Material.TwoTone.Add">Create Schedule</MudNavLink>
-                </MudNavMenu>
-            </MudPaper>
             <div style="flex:1; padding:20px">
                 @Body
             </div>
