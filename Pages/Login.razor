@@ -12,9 +12,9 @@
     <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center mud-width-full"
                   style="height:50vh; min-height: 300px;">
         <MudGrid Spacing="2" Justify="Justify.Center" Class="align-items-center">
-            <MudPaper Class="pa-4">
+            <MudPaper Class="pa-4 mud-theme-primary">
                 <MudItem xs="12">
-                    <MudText Typo="Typo.h2" Align="Align.Center">Login or Register</MudText>
+                    <MudText Typo="Typo.h2" Style="font-weight:bold" Align="Align.Center">Login or Register</MudText>
                 </MudItem>
                 <MudItem xs="12">
                     <MudTextField @bind-Value="model.email" For="@(() => model.email)" Label="Username"
@@ -24,17 +24,17 @@
                     <MudTextField @bind-Value="model.password" For="@(() => model.password)" Label="Password"
                                   Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End"
                                   AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="OnShowClick"
-                                  AdornmentAriaLabel="Show Password" />
+                                  AdornmentAriaLabel="Show Password" AdornmentColor="@Color.Inherit" />
                 </MudItem>
                 <MudItem xs="12">
                     <MudGrid Justify="Justify.Center" Spacing="3">
                         <MudItem xs="6">
                             <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" FullWidth=true
-                                       StartIcon="@Icons.Material.TwoTone.Login" Color="Color.Primary">Sign In</MudButton>
+                                       StartIcon="@Icons.Material.TwoTone.Login" Color="Color.Secondary">Sign In</MudButton>
                         </MudItem>
                         <MudItem xs="6">
                             <MudButton Variant="Variant.Filled" Href="/create-account" FullWidth=true
-                                       StartIcon="@Icons.Material.TwoTone.Create" Color="Color.Primary">Create Account
+                                       StartIcon="@Icons.Material.TwoTone.Create" Color="Color.Secondary">Create Account
                             </MudButton>
                         </MudItem>
                     </MudGrid>

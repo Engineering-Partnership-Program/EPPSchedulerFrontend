@@ -1,12 +1,24 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Runtime.CompilerServices
 
 <MudLayout>
-    <MudAppBar>
+    <MudAppBar Color="@Color.Primary">
+        <MudLink Href="/dashboard">
+            <MudGrid>
+                <MudItem>
+                    <MudImage Src="images/SiteLogo.png" Alt="Western Colorado University Logo" Height="50">
+                    </MudImage>
+                </MudItem>
+                <MudItem>
+                    <MudText Typo="@Typo.h4" Color="@Color.Secondary" Style="font-weight:bold">EPP Scheduler</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudLink>
         <MudSpacer />
-        <MudMenu Dense Variant="Variant.Text" Size="Size.Medium" Color="Color.Inherit"
-                 Icon="@Icons.Material.Filled.Menu">
-            <MudMenuItem Icon="@Icons.Material.TwoTone.Logout" IconColor="@Color.Primary" Label="Sign Out" Href="/" />
+        <MudMenu Dense Variant="Variant.Text" Size="Size.Medium" Icon="@Icons.Material.Filled.Menu"
+                 Color="Color.Inherit">
+            <MudMenuItem Icon="@Icons.Material.TwoTone.Logout" IconColor="@Color.Secondary" Label="Sign Out" Href="/" />
         </MudMenu>
     </MudAppBar>
     <MudMainContent>
@@ -15,7 +27,7 @@
 </MudLayout>
 
 @* Required *@
-<MudThemeProvider />
+<MudThemeProvider Theme="WesternTheme" @bind-IsDarkMode="@darkMode" />
 <MudPopoverProvider />
 
 @* Needed for dialogs *@
@@ -23,3 +35,20 @@
 
 @* Needed for snackbars *@
 <MudSnackbarProvider />
+
+@code {
+
+    bool darkMode = true;
+    MudTheme WesternTheme = new MudTheme()
+    {
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#2b3438",
+            Secondary = "#cd2c3b",
+            Tertiary = "#ffffff",
+            Background = "#1d1d1d",
+            TextPrimary = "#ffffff",
+            TextSecondary = "#cd2c3b",
+        }
+    };
+}

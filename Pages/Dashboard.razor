@@ -12,35 +12,28 @@
 
 <PageTitle>EPP Scheduler | Dashboard</PageTitle>
 
-<AuthorizeView>
-    <Authorized>
-        <MudContainer>
-            <MudDataGrid Items="@Elements">
-                <Columns>
-                    <PropertyColumn Property="x => x.timeSlot.ToString()" Title="Time">
-                    </PropertyColumn>
-                    <PropertyColumn Property="x => x.sunday.ToString()" Title="Sunday">
-                    </PropertyColumn>
-                    <PropertyColumn Property="x => x.monday.ToString()" Title="Monday">
-                    </PropertyColumn>
-                    <PropertyColumn Property="x => x.tuesday.ToString()" Title="Tuesday">
-                    </PropertyColumn>
-                    <PropertyColumn Property="x => x.wednesday.ToString()" Title="Wednesday">
-                    </PropertyColumn>
-                    <PropertyColumn Property="x => x.thursday.ToString()" Title="Thursday">
-                    </PropertyColumn>
-                    <PropertyColumn Property="x => x.friday.ToString()" Title="Friday">
-                    </PropertyColumn>
-                    <PropertyColumn Property="x => x.saturday.ToString()" Title="Saturday">
-                    </PropertyColumn>
-                </Columns>
-            </MudDataGrid>
-        </MudContainer>
-    </Authorized>
-    <NotAuthorized>
-        You are not authorized to be here
-    </NotAuthorized>
-</AuthorizeView>
+<MudContainer>
+    <MudDataGrid Items="@Elements">
+        <Columns>
+            <PropertyColumn Property="x => x.timeSlot.ToString()" Title="Time">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.sunday.ToString()" Title="Sunday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.monday.ToString()" Title="Monday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.tuesday.ToString()" Title="Tuesday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.wednesday.ToString()" Title="Wednesday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.thursday.ToString()" Title="Thursday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.friday.ToString()" Title="Friday">
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.saturday.ToString()" Title="Saturday">
+            </PropertyColumn>
+        </Columns>
+    </MudDataGrid>
+</MudContainer>
 
 @code {
 
