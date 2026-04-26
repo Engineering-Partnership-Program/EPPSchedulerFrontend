@@ -10,9 +10,9 @@
     <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center mud-width-full"
                   style="height:50vh; min-height: 300px;">
         <MudGrid Spacing="2" Justify="Justify.Center" Class="align-items-center">
-            <MudPaper Class="pa-4">
+            <MudPaper Class="pa-4 mud-theme-primary">
                 <MudItem xs="12">
-                    <MudText Typo="Typo.h2" Align="Align.Center">Create Account</MudText>
+                    <MudText Typo="Typo.h2" Align="Align.Center" Style="font-weight:bold">Create Account</MudText>
                 </MudItem>
                 <MudItem xs="12">
                     <MudTextField @bind-Value="model.email" For="@(() => model.email)" Label="Username"
@@ -31,7 +31,7 @@
                         </MudButton>
                     </MudItem>
                     <MudItem xs="6">
-                        <MudButton Variant="Variant.Filled" Href="/" FullWidth=true
+                        <MudButton Variant="Variant.Filled" Href="/EPPSchedulerFrontend" FullWidth=true
                                    StartIcon="@Icons.Material.TwoTone.Login" Color="Color.Secondary">Login</MudButton>
                     </MudItem>
                 </MudGrid>
