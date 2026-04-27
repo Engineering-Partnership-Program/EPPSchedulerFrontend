@@ -14,4 +14,4 @@ WORKDIR /usr/share/nginx/html
 COPY --from=build /app/out/wwwroot .
 # Railway needs Nginx to listen on the $PORT variable
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE $PORT
+EXPOSE 80
