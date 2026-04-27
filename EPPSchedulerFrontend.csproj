@@ -19,7 +19,7 @@
     <PackageReference Include="PublishSPAforGitHubPages.Build" Version="3.0.3" />
   </ItemGroup>
 
-  <PropertyGroup>
+  <!-- <PropertyGroup>
     <BlazorCacheBootResources>false</BlazorCacheBootResources>
-  </PropertyGroup>
+  </PropertyGroup> -->
 </Project>
