@@ -13,7 +13,7 @@
 <PageTitle>EPP Scheduler | Dashboard</PageTitle>
 
 <MudContainer>
-    <MudDataGrid Items="@Elements">
+    <MudDataGrid Items="@Elements" Filterable="false">
         <Columns>
             <PropertyColumn Property="x => x.timeSlot.ToString()" Title="Time">
             </PropertyColumn>

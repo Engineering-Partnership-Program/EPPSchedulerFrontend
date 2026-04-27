@@ -8,6 +8,7 @@
 @using EPPSchedulerFrontend.DataClasses
 @using System.Runtime.CompilerServices
 
+
 <MudSwitch @bind-Value="_isActive"
            Label="@(_isActive ? "Save and Activate These Settings on Submit" : "Only Save These Settings")"></MudSwitch>
 <MudSwitch @bind-Value="_manual" Label="@(_manual ? "Create Schedule Programatically" : "Generate Schedule Manually")">
@@ -60,14 +61,14 @@
             <PickerActions>
                 <MudButton Class="mr-auto align-self-start" OnClick="@(() => _fabStartPickers[index].ClearAsync())">Clear
                 </MudButton>
-                <MudButton Color="Color.Primary" OnClick="@(() => _fabStartPickers[index].CloseAsync())">OK</MudButton>
+                <MudButton Color="Color.Secondary" OnClick="@(() => _fabStartPickers[index].CloseAsync())">OK</MudButton>
             </PickerActions>
         </MudTimePicker>
         <MudTimePicker Label="End" AmPm="true" @bind-Time="_fabEndTimes[index]" @ref="_fabEndPickers[index]" AutoClose="false">
             <PickerActions>
                 <MudButton Class="mr-auto align-self-start" OnClick="@(() => _fabEndPickers[index].ClearAsync())">Clear
                 </MudButton>
-                <MudButton Color="Color.Primary" OnClick="@(() => _fabEndPickers[index].CloseAsync())">OK</MudButton>
+                <MudButton Color="Color.Secondary" OnClick="@(() => _fabEndPickers[index].CloseAsync())">OK</MudButton>
             </PickerActions>
         </MudTimePicker>
     }
@@ -82,7 +83,7 @@
 <MudButton OnClick="OnScheduleCreate">Create</MudButton>
 
 @code {
-    private MudForm _form;
+    @* private MudForm _form; *@
     private bool _success;
     private string[] _errors = [];
     private bool _isActive = true;
@@ -147,8 +148,56 @@
         }
         _numFabElements--;
     }
-    public void OnScheduleCreate()
+    public async void OnScheduleCreate()
     {
-        snackbar.Add("New schedule profile has been created", Severity.Success);
+        List<NestedTimeInterval> fabTimeIntervals = new List<NestedTimeInterval>();
+        int i = 0;
+        foreach (string day in _fabDays)
+        {
+            if (Enum.TryParse(day, out DayOfWeek enumDay))
+            {
+                snackbar.Add($"{day} is not a valid day of week", Severity.Error);
+                return;
+            }
+            fabTimeIntervals.Add(new NestedTimeInterval(new List<TimeOnly> { TimeOnly.FromTimeSpan(_fabStartTimes[i] ??
+TimeSpan.Zero) },
+new List<TimeOnly> { TimeOnly.FromTimeSpan(_fabEndTimes[i] ?? TimeSpan.Zero) }, enumDay));
+            i++;
+        }
+
+        List<TimeInterval> shopTimeIntervals = new List<TimeInterval>();
+        i = 0;
+        foreach (string day in _shopDays)
+        {
+            if (Enum.TryParse(day, out DayOfWeek enumDay))
+            {
+                snackbar.Add($"{day} is not a valid day of week", Severity.Error);
+                return;
+            }
+            shopTimeIntervals.Add(new TimeInterval(enumDay, TimeOnly.FromTimeSpan(_shopStartTimes[i] ?? new TimeSpan(0, 0, 0)),
+TimeOnly.FromTimeSpan(_shopEndTimes[i] ?? TimeSpan.Zero)));
+            i++;
+        }
+        ScheduleProfile newProfile = new ScheduleProfile(Guid.NewGuid(), _isActive, _manual, false, _maxConcurrentEmployees,
+_maxTotalHours, _minTotalHours, _maxHoursPerEmployee, shopTimeIntervals, fabTimeIntervals);
+
+        if (authenticationService is null || clientFactory is null || navigationManager is null)
+        {
+            return;
+        }
+        HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
+
+        HttpResponseMessage resp = await client.PostAsJsonAsync("api/ScheduleProfile", newProfile);
+
+        try
+        {
+            resp.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException)
+        {
+            snackbar.Add("There was an error while attempting to create a new schedule profile, please try again", Severity.Error);
+        }
+        snackbar.Add(message: "New schedule profile has been created", Severity.Success);
+        navigationManager.NavigateTo("admin-dashboard");
     }
 }
