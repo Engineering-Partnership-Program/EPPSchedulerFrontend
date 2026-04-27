@@ -1,0 +1,4 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "buildCommand": "dotnet workload install wasm-tools && dotnet publish -c Release -o out"
+}
