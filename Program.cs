@@ -16,7 +16,7 @@ builder
         "EPPSchedulerBackend",
         client =>
         {
-            client.BaseAddress = new Uri("eppschedulerbackend-production.up.railway.app");
+            client.BaseAddress = new Uri("https://eppschedulerbackend-production.up.railway.app");
         }
     )
     .AddHttpMessageHandler<CookieHandler>();
