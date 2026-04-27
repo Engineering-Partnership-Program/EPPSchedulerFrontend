@@ -5,10 +5,10 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 
 # Copy the solution file into the container
-COPY DockingBlazor.sln ./
+COPY EPPSchedulerFrontend.sln ./
 
 # Copy the project file into the container (needed before restore)
-COPY DockingBlazor/DockingBlazor.csproj ./DockingBlazor/
+COPY EPPSchedulerFrontend.csproj ./DockingBlazor/
 
 # Restore NuGet packages (uses Docker layer caching effectively)
 RUN dotnet restore
@@ -26,10 +26,10 @@ FROM nginx
 WORKDIR /app
 
 # Expose port 80 (the default port Nginx listens on)
-EXPOSE 80
+EXPOSE $PORT
 
 # Copy the custom Nginx configuration file into the container
-COPY default.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy the published Blazor files to the Nginx web root
 COPY --from=build /app/out/wwwroot /usr/share/nginx/html
