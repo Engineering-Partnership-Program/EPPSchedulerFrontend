@@ -1,5 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
+# 1. Install Python 3 (Required by Wasm-Tools/Emscripten)
+RUN apt-get update && apt-get install -y python3
 COPY . .
 # Install tools and publish
 RUN dotnet workload install wasm-tools
