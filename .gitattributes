@@ -1,0 +1,5 @@
+# Protect Blazor framework files from line ending changes
+*.dll binary
+*.wasm binary
+*.dat binary
+*.js binary
