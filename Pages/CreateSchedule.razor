@@ -29,19 +29,19 @@
             }
         </MudSelect>
         <MudTimePicker Label="Begin" AmPm="true" @bind-Time="_shopStartTimes[index]" @ref="_shopStartPickers[index]"
-                       AutoClose="false">
+                       AutoClose="false" Color="Color.Tertiary">
             <PickerActions>
                 <MudButton Class="mr-auto align-self-start" OnClick="@(() => _shopStartPickers[index].ClearAsync())">Clear
                 </MudButton>
-                <MudButton Color="Color.Primary" OnClick="@(() => _shopStartPickers[index].CloseAsync())">OK</MudButton>
+                <MudButton Color="Color.Secondary" OnClick="@(() => _shopStartPickers[index].CloseAsync())">OK</MudButton>
             </PickerActions>
         </MudTimePicker>
-        <MudTimePicker Label="End" AmPm="true" @bind-Time="_shopEndTimes[index]" @ref="_shopEndPickers[index]"
-                       AutoClose="false">
+        <MudTimePicker Label="End" AmPm="true" @bind-Time="_shopEndTimes[index]" @ref="_shopEndPickers[index]" AutoClose="false"
+                       Color="Color.Tertiary">
             <PickerActions>
                 <MudButton Class="mr-auto align-self-start" OnClick="@(() => _shopEndPickers[index].ClearAsync())">Clear
                 </MudButton>
-                <MudButton Color="Color.Primary" OnClick="@(() => _shopEndPickers[index].CloseAsync())">OK</MudButton>
+                <MudButton Color="Color.Secondary" OnClick="@(() => _shopEndPickers[index].CloseAsync())">OK</MudButton>
             </PickerActions>
         </MudTimePicker>
     }
@@ -57,14 +57,15 @@
             }
         </MudSelect>
         <MudTimePicker Label="Begin" AmPm="true" @bind-Time="_fabStartTimes[index]" @ref="_fabStartPickers[index]"
-                       AutoClose="false">
+                       AutoClose="false" Color="Color.Tertiary">
             <PickerActions>
                 <MudButton Class="mr-auto align-self-start" OnClick="@(() => _fabStartPickers[index].ClearAsync())">Clear
                 </MudButton>
                 <MudButton Color="Color.Secondary" OnClick="@(() => _fabStartPickers[index].CloseAsync())">OK</MudButton>
             </PickerActions>
         </MudTimePicker>
-        <MudTimePicker Label="End" AmPm="true" @bind-Time="_fabEndTimes[index]" @ref="_fabEndPickers[index]" AutoClose="false">
+        <MudTimePicker Label="End" AmPm="true" @bind-Time="_fabEndTimes[index]" @ref="_fabEndPickers[index]" AutoClose="false"
+                       Color="Color.Tertiary">
             <PickerActions>
                 <MudButton Class="mr-auto align-self-start" OnClick="@(() => _fabEndPickers[index].ClearAsync())">Clear
                 </MudButton>
@@ -73,11 +74,17 @@
         </MudTimePicker>
     }
 
+    <MudSpacer></MudSpacer>
+
     <MudNumericField @bind-Value="_maxConcurrentEmployees"
                      Label="Enter the maximum number of employees allowed to work at a time" />
+    <MudSpacer></MudSpacer>
     <MudNumericField @bind-Value="_maxTotalHours" Label="Maximum total number of hours allowed across all employees" />
+    <MudSpacer></MudSpacer>
     <MudNumericField @bind-Value="_minTotalHours" Label="Minimum total number of hours allowed across all employees" />
+    <MudSpacer></MudSpacer>
     <MudNumericField @bind-Value="_maxHoursPerEmployee" Label="Maximum number of hours allowed for any given employee" />
+    <MudSpacer></MudSpacer>
 }
 
 <MudButton OnClick="OnScheduleCreate">Create</MudButton>
@@ -154,7 +161,7 @@
         int i = 0;
         foreach (string day in _fabDays)
         {
-            if (Enum.TryParse(day, out DayOfWeek enumDay))
+            if (!Enum.TryParse(day, out DayOfWeek enumDay))
             {
                 snackbar.Add($"{day} is not a valid day of week", Severity.Error);
                 return;
@@ -169,7 +176,7 @@ new List<TimeOnly> { TimeOnly.FromTimeSpan(_fabEndTimes[i] ?? TimeSpan.Zero) }, 
         i = 0;
         foreach (string day in _shopDays)
         {
-            if (Enum.TryParse(day, out DayOfWeek enumDay))
+            if (!Enum.TryParse(day, out DayOfWeek enumDay))
             {
                 snackbar.Add($"{day} is not a valid day of week", Severity.Error);
                 return;
