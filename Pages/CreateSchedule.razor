@@ -8,12 +8,12 @@
 @using EPPSchedulerFrontend.DataClasses
 @using System.Runtime.CompilerServices
 
-
+<MudTextField @bind-Value="_name" Label="Name for the new schedule profile" />
 <MudSwitch @bind-Value="_isActive"
            Label="@(_isActive ? "Save and Activate These Settings on Submit" : "Only Save These Settings")"></MudSwitch>
 <MudSwitch @bind-Value="_manual" Label="@(_manual ? "Create Schedule Programatically" : "Generate Schedule Manually")">
 </MudSwitch>
-@if (_manual)
+@if (!_manual)
 {
     <MudSwitch @bind-Value="_pairByExperience"
                Label="@(_pairByExperience ? "Pair employees by experience" : "Don't pair employees by experience")"></MudSwitch>
@@ -94,12 +94,13 @@
     private bool _success;
     private string[] _errors = [];
     private bool _isActive = true;
-    private bool _manual = false;
+    private bool _manual = true;
     private bool _pairByExperience;
     private int _maxConcurrentEmployees;
     private float _maxTotalHours;
     private float _minTotalHours;
     private float _maxHoursPerEmployee;
+    private string _name;
     private string[] _shopDays = new string[7];
     private TimeSpan?[] _shopStartTimes = new TimeSpan?[7];
     private TimeSpan?[] _shopEndTimes = new TimeSpan?[7];
@@ -194,7 +195,7 @@ TimeOnly.FromTimeSpan(_shopEndTimes[i] ?? TimeSpan.Zero)));
             i++;
         }
         ScheduleProfile newProfile = new ScheduleProfile(Guid.NewGuid(), _isActive, _manual, false, _maxConcurrentEmployees,
-_maxTotalHours, _minTotalHours, _maxHoursPerEmployee, shopTimeIntervals, fabTimeIntervals);
+_maxTotalHours, _minTotalHours, _maxHoursPerEmployee, shopTimeIntervals, fabTimeIntervals, _name);
 
         if (authenticationService is null || clientFactory is null || navigationManager is null)
         {
@@ -202,7 +203,7 @@ _maxTotalHours, _minTotalHours, _maxHoursPerEmployee, shopTimeIntervals, fabTime
         }
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
 
-        HttpResponseMessage resp = await client.PostAsJsonAsync("api/ScheduleProfile", newProfile);
+        HttpResponseMessage resp = await client.PostAsJsonAsync(requestUri: "api/ScheduleProfile", newProfile);
 
         try
         {
@@ -210,8 +211,11 @@ _maxTotalHours, _minTotalHours, _maxHoursPerEmployee, shopTimeIntervals, fabTime
         }
         catch (HttpRequestException)
         {
+            Console.WriteLine("This is the error: " + await resp.Content.ReadAsStringAsync());
             snackbar.Add("There was an error while attempting to create a new schedule profile, please try again", Severity.Error);
+            return;
         }
+        Console.WriteLine("The vallue of manual is: " + _manual);
         snackbar.Add(message: "New schedule profile has been created", Severity.Success);
         navigationManager.NavigateTo("admin-dashboard");
     }

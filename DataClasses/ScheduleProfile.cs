@@ -5,6 +5,7 @@ namespace EPPSchedulerFrontend.DataClasses;
 public class ScheduleProfile
 {
     public required Guid scheduleProfileId { get; set; }
+    public required string name { get; set; }
     public required bool active { get; set; }
     public required bool manual { get; set; }
     public bool? pairByExperience { get; set; }
@@ -20,13 +21,15 @@ public class ScheduleProfile
         Guid scheduleProfileId,
         bool active,
         bool manual,
-        List<TimeInterval> shopHours
+        List<TimeInterval> shopHours,
+        string name
     )
     {
         this.scheduleProfileId = scheduleProfileId;
         this.active = active;
         this.manual = manual;
         this.shopHours = shopHours;
+        this.name = name;
     }
 
     [SetsRequiredMembers]
@@ -40,7 +43,8 @@ public class ScheduleProfile
         float minTotalHours,
         float maxHoursPerEmployee,
         List<TimeInterval> shopHours,
-        List<NestedTimeInterval> fabTimes
+        List<NestedTimeInterval> fabTimes,
+        string name
     )
     {
         this.scheduleProfileId = scheduleProfileId;
@@ -53,5 +57,8 @@ public class ScheduleProfile
         this.maxHoursPerEmployee = maxHoursPerEmployee;
         this.shopHours = shopHours;
         this.fabTimes = fabTimes;
+        this.name = name;
     }
+
+    public ScheduleProfile() { }
 }

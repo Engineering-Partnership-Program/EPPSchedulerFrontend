@@ -4,9 +4,15 @@
 @using EPPSchedulerFrontend.DataClasses
 
 <PageTitle>EPP Scheduler | Admin Dashboard</PageTitle>
-
-Hello something is happening
-
+@if (!displayInProgress)
+{
+    <MudSelect @bind-Value="_selectedScheduleProfile" @bind-Value:after="@displayScheduleProfile">
+        @foreach (string name in scheduleProfileNames)
+        {
+            <MudSelectItem Value="@name">@name</MudSelectItem>
+        }
+    </MudSelect>
+}
 <MudContainer>
     <MudDataGrid Items="@Elements" Filterable="false">
         <Columns>
@@ -32,33 +38,51 @@ Hello something is happening
 
 @code {
 
+    private bool displaySchedule = false;
+
     private IEnumerable<TimeSlot> Elements = new List<TimeSlot>();
 
-    public void OnCreateNewSchedule()
-    {
-        Console.WriteLine("I have been clicked");
-    }
-    @* protected override async Task OnInitializedAsync()
+    private string _selectedScheduleProfile;
+
+    List<ScheduleProfile> scheduleProfiles = new List<ScheduleProfile>();
+
+    List<string> scheduleProfileNames = new List<string>();
+    
+    private bool displayInProgress = false;
+    
+    protected override async Task OnInitializedAsync()
     {
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
 
-        HttpResponseMessage resp = await client.PostAsync("api/Credentials/verify-manager", null);
-        Console.WriteLine("Verification Complete");
+        HttpResponseMessage resp = await client.GetAsync("api/ScheduleProfile");
         try
         {
             resp.EnsureSuccessStatusCode();
         }
         catch (HttpRequestException)
         {
-            if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized || resp.StatusCode == System.Net.HttpStatusCode.Forbidden)
-            {
-                snackbar.Add("Not authorized to be here!", Severity.Error);
-            }
-            else
-            {
-                snackbar.Add(message: "There was an error during authentication", Severity.Error);
-            }
-            navigationManager.NavigateTo("/", replace: true);
+            snackbar.Add("Failed to get list of schedule profiles", Severity.Error);
+            return;
         }
-    } *@
+
+        scheduleProfiles = await resp.Content.ReadFromJsonAsync<List<ScheduleProfile>>();
+
+        foreach (ScheduleProfile scheduleProfile in scheduleProfiles)
+        {
+            scheduleProfileNames.Add(scheduleProfile.name);
+        }
+    }
+
+    private async void displayScheduleProfile()
+    {
+        displayInProgress = true;
+
+        ScheduleProfile currentProfile = scheduleProfiles.First(x => x.name == _selectedScheduleProfile);
+
+        HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
+
+        FullSchedule resp = await client.GetFromJsonAsync<FullSchedule>($"api/FullSchedule/{currentProfile.name}");
+
+        snackbar.Add("Got the things", Severity.Success);
+    }
 }

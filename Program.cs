@@ -16,7 +16,7 @@ builder
         "EPPSchedulerBackend",
         client =>
         {
-            client.BaseAddress = new Uri("https://api.eppscheduler.com");
+            client.BaseAddress = new Uri("https://localhost:7016");
         }
     )
     .AddHttpMessageHandler<CookieHandler>();
