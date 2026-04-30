@@ -8,86 +8,180 @@
 @using EPPSchedulerFrontend.DataClasses
 @using System.Runtime.CompilerServices
 
-<MudTextField @bind-Value="_name" Label="Name for the new schedule profile" />
-<MudSwitch @bind-Value="_isActive"
-           Label="@(_isActive ? "Save and Activate These Settings on Submit" : "Only Save These Settings")"></MudSwitch>
-<MudSwitch @bind-Value="_manual" Label="@(_manual ? "Create Schedule Programatically" : "Generate Schedule Manually")">
-</MudSwitch>
-@if (!_manual)
-{
-    <MudSwitch @bind-Value="_pairByExperience"
-               Label="@(_pairByExperience ? "Pair employees by experience" : "Don't pair employees by experience")"></MudSwitch>
-    <MudButton OnClick="AddShopHourElement">Add Shop Time</MudButton>
-    <MudButton OnClick="RemoveShopHourElement">Remove Shop Time</MudButton>
-    @for (int i = 0; i < _numShopHourElements; i++)
-    {
-        int index = i;
-        <MudSelect @bind-Value="_shopDays[index]">
-            @foreach (string day in Enum.GetNames(typeof(DayOfWeek)))
-            {
-                <MudSelectItem Value="@day">@day</MudSelectItem>
-            }
-        </MudSelect>
-        <MudTimePicker Label="Begin" AmPm="true" @bind-Time="_shopStartTimes[index]" @ref="_shopStartPickers[index]"
-                       AutoClose="false" Color="Color.Secondary">
-            <PickerActions>
-                <MudButton Class="mr-auto align-self-start" OnClick="@(() => _shopStartPickers[index].ClearAsync())">Clear
-                </MudButton>
-                <MudButton Color="Color.Secondary" OnClick="@(() => _shopStartPickers[index].CloseAsync())">OK</MudButton>
-            </PickerActions>
-        </MudTimePicker>
-        <MudTimePicker Label="End" AmPm="true" @bind-Time="_shopEndTimes[index]" @ref="_shopEndPickers[index]" AutoClose="false"
-                       Color="Color.Secondary">
-            <PickerActions>
-                <MudButton Class="mr-auto align-self-start" OnClick="@(() => _shopEndPickers[index].ClearAsync())">Clear
-                </MudButton>
-                <MudButton Color="Color.Secondary" OnClick="@(() => _shopEndPickers[index].CloseAsync())">OK</MudButton>
-            </PickerActions>
-        </MudTimePicker>
-    }
-    <MudButton OnClick="AddFabTimeElement">Add Fab Time</MudButton>
-    <MudButton OnClick="RemoveFabTimeElement">Remove Fab Time</MudButton>
-    @for (int i = 0; i < _numFabElements; i++)
-    {
-        int index = i;
-        <MudSelect @bind-Value="_fabDays[index]">
-            @foreach (string day in Enum.GetNames(typeof(DayOfWeek)))
-            {
-                <MudSelectItem Value="@day">@day</MudSelectItem>
-            }
-        </MudSelect>
-        <MudTimePicker Label="Begin" AmPm="true" @bind-Time="_fabStartTimes[index]" @ref="_fabStartPickers[index]"
-                       AutoClose="false" Color="Color.Secondary">
-            <PickerActions>
-                <MudButton Class="mr-auto align-self-start" OnClick="@(() => _fabStartPickers[index].ClearAsync())">Clear
-                </MudButton>
-                <MudButton Color="Color.Secondary" OnClick="@(() => _fabStartPickers[index].CloseAsync())">OK</MudButton>
-            </PickerActions>
-        </MudTimePicker>
-        <MudTimePicker Label="End" AmPm="true" @bind-Time="_fabEndTimes[index]" @ref="_fabEndPickers[index]" AutoClose="false"
-                       Color="Color.Secondary">
-            <PickerActions>
-                <MudButton Class="mr-auto align-self-start" OnClick="@(() => _fabEndPickers[index].ClearAsync())">Clear
-                </MudButton>
-                <MudButton Color="Color.Secondary" OnClick="@(() => _fabEndPickers[index].CloseAsync())">OK</MudButton>
-            </PickerActions>
-        </MudTimePicker>
-    }
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 mb-6">
+    <MudCard Elevation="3">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h5" Color="Color.Tertiary">Create Schedule Profile</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
 
-    <MudDivider></MudDivider>
+        <MudCardContent>
+            <MudStack Spacing="4">
+                
+                @* --- PROFILE BASICS --- *@
+                <MudTextField @bind-Value="_name" Label="Name for the new schedule profile"
+                              Variant="Variant.Outlined" />
+                
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudSwitch @bind-Value="_isActive" Color="Color.Primary"
+                                   Label="@(_isActive ? "Save and Activate These Settings on Submit" : "Only Save These Settings")" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSwitch @bind-Value="_manual" Color="Color.Secondary"
+                                   Label="@(_manual ? "Create Schedule Manually" : "Generate Schedule Programatically")" />
+                    </MudItem>
+                </MudGrid>
 
-    <MudNumericField @bind-Value="_maxConcurrentEmployees"
-                     Label="Enter the maximum number of employees allowed to work at a time" />
-    <MudDivider></MudDivider>
-    <MudNumericField @bind-Value="_maxTotalHours" Label="Maximum total number of hours allowed across all employees" />
-    <MudDivider></MudDivider>
-    <MudNumericField @bind-Value="_minTotalHours" Label="Minimum total number of hours allowed across all employees" />
-    <MudDivider></MudDivider>
-    <MudNumericField @bind-Value="_maxHoursPerEmployee" Label="Maximum number of hours allowed for any given employee" />
-    <MudDivider></MudDivider>
-}
+                @if (!_manual)
+                {
+                    <MudDivider Class="my-2" />
 
-<MudButton OnClick="OnScheduleCreate">Create</MudButton>
+                    @* --- GENERAL SETTINGS --- *@
+                    <MudText Typo="Typo.h6">General Settings</MudText>
+                    <MudSwitch @bind-Value="_pairByExperience" Color="Color.Info"
+                               Label="@(_pairByExperience ? "Pair employees by experience" : "Don't pair employees by experience")" />
+
+                    <MudDivider Class="my-2" />
+
+                    @* --- SHOP TIMES --- *@
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudText Typo="Typo.h6">Shop Times</MudText>
+                        <div>
+                            <MudButton OnClick="AddShopHourElement" Color="Color.Success" Variant="Variant.Text">Add Shop
+                                Time</MudButton>
+                                <MudButton OnClick="RemoveShopHourElement" Color="Color.Error" Variant="Variant.Text">Remove
+                                    Shop Time</MudButton>
+                                </div>
+                            </MudStack>
+                    
+                            @for (int i = 0; i < _numShopHourElements; i++)
+                            {
+                                int index = i;
+                                <MudGrid>
+                                    <MudItem xs="12" md="4">
+                                        <MudSelect @bind-Value="_shopDays[index]" Label="Day of Week" Variant="Variant.Outlined"
+                                                   Margin="Margin.Dense">
+                                            @foreach (string day in Enum.GetNames(typeof(DayOfWeek)))
+                                            {
+                                                <MudSelectItem Value="@day">@day</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </MudItem>
+                                    <MudItem xs="6" md="4">
+                                        <MudTimePicker Label="Begin Time" AmPm="true" @bind-Time="_shopStartTimes[index]"
+                                                       @ref="_shopStartPickers[index]" AutoClose="false" Color="Color.Secondary"
+                                                       Variant="Variant.Outlined" Margin="Margin.Dense">
+                                            <PickerActions>
+                                                <MudButton Class="mr-auto align-self-start"
+                                                           OnClick="@(() => _shopStartPickers[index].ClearAsync())">Clear</MudButton>
+                                                <MudButton Color="Color.Secondary"
+                                                           OnClick="@(() => _shopStartPickers[index].CloseAsync())">OK</MudButton>
+                                            </PickerActions>
+                                        </MudTimePicker>
+                                    </MudItem>
+                                    <MudItem xs="6" md="4">
+                                        <MudTimePicker Label="End Time" AmPm="true" @bind-Time="_shopEndTimes[index]"
+                                                       @ref="_shopEndPickers[index]" AutoClose="false" Color="Color.Secondary"
+                                                       Variant="Variant.Outlined" Margin="Margin.Dense">
+                                            <PickerActions>
+                                                <MudButton Class="mr-auto align-self-start"
+                                                           OnClick="@(() => _shopEndPickers[index].ClearAsync())">Clear</MudButton>
+                                                <MudButton Color="Color.Secondary"
+                                                           OnClick="@(() => _shopEndPickers[index].CloseAsync())">OK</MudButton>
+                                            </PickerActions>
+                                        </MudTimePicker>
+                                    </MudItem>
+                                </MudGrid>
+                            }
+
+                            <MudDivider Class="my-2" />
+
+                            @* --- FAB TIMES --- *@
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                                <MudText Typo="Typo.h6">Fab Times</MudText>
+                                <div>
+                                    <MudButton OnClick="AddFabTimeElement" Color="Color.Success" Variant="Variant.Text">Add Fab Time
+                                    </MudButton>
+                                    <MudButton OnClick="RemoveFabTimeElement" Color="Color.Error" Variant="Variant.Text">Remove Fab
+                                        Time</MudButton>
+                                    </div>
+                                </MudStack>
+                    
+                                @for (int i = 0; i < _numFabElements; i++)
+                                {
+                                    int index = i;
+                                    <MudGrid>
+                                        <MudItem xs="12" md="4">
+                                            <MudSelect @bind-Value="_fabDays[index]" Label="Day of Week" Variant="Variant.Outlined"
+                                                       Margin="Margin.Dense">
+                                                @foreach (string day in Enum.GetNames(typeof(DayOfWeek)))
+                                                {
+                                                    <MudSelectItem Value="@day">@day</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        </MudItem>
+                                        <MudItem xs="6" md="4">
+                                            <MudTimePicker Label="Begin Time" AmPm="true" @bind-Time="_fabStartTimes[index]"
+                                                           @ref="_fabStartPickers[index]" AutoClose="false" Color="Color.Secondary"
+                                                           Variant="Variant.Outlined" Margin="Margin.Dense">
+                                                <PickerActions>
+                                                    <MudButton Class="mr-auto align-self-start"
+                                                               OnClick="@(() => _fabStartPickers[index].ClearAsync())">Clear</MudButton>
+                                                    <MudButton Color="Color.Secondary"
+                                                               OnClick="@(() => _fabStartPickers[index].CloseAsync())">OK</MudButton>
+                                                </PickerActions>
+                                            </MudTimePicker>
+                                        </MudItem>
+                                        <MudItem xs="6" md="4">
+                                            <MudTimePicker Label="End Time" AmPm="true" @bind-Time="_fabEndTimes[index]"
+                                                           @ref="_fabEndPickers[index]" AutoClose="false" Color="Color.Secondary"
+                                                           Variant="Variant.Outlined" Margin="Margin.Dense">
+                                                <PickerActions>
+                                                    <MudButton Class="mr-auto align-self-start"
+                                                               OnClick="@(() => _fabEndPickers[index].ClearAsync())">Clear</MudButton>
+                                                    <MudButton Color="Color.Secondary"
+                                                               OnClick="@(() => _fabEndPickers[index].CloseAsync())">OK</MudButton>
+                                                </PickerActions>
+                                            </MudTimePicker>
+                                        </MudItem>
+                                    </MudGrid>
+                                }
+
+                                <MudDivider Class="my-2" />
+
+                                @* --- CONSTRAINTS --- *@
+                                <MudText Typo="Typo.h6">Constraints</MudText>
+                                <MudGrid>
+                                    <MudItem xs="12" sm="6">
+                                        <MudNumericField @bind-Value="_maxConcurrentEmployees" Variant="Variant.Outlined"
+                                                         Label="Max concurrent employees" HelperText="Allowed to work at a time" />
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6">
+                                        <MudNumericField @bind-Value="_maxHoursPerEmployee" Variant="Variant.Outlined"
+                                                         Label="Max hours per employee" HelperText="Limit for any given employee" />
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6">
+                                        <MudNumericField @bind-Value="_maxTotalHours" Variant="Variant.Outlined" Label="Max total hours"
+                                                         HelperText="Allowed across all employees" />
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6">
+                                        <MudNumericField @bind-Value="_minTotalHours" Variant="Variant.Outlined" Label="Min total hours"
+                                                         HelperText="Allowed across all employees" />
+                                    </MudItem>
+                                </MudGrid>
+                            }
+                        </MudStack>
+                    </MudCardContent>
+
+                    <MudCardActions Class="pb-4 pl-4 pr-4">
+                        <MudSpacer />
+                        <MudButton Size="Size.Large" Variant="Variant.Filled" Color="Color.Primary" OnClick="OnScheduleCreate">
+                            Create Profile</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudContainer>
 
 @code {
     @* private MudForm _form; *@
@@ -156,6 +250,7 @@
         }
         _numFabElements--;
     }
+    
     public async void OnScheduleCreate()
     {
         List<NestedTimeInterval> fabTimeIntervals = new List<NestedTimeInterval>();

@@ -1,0 +1,61 @@
+.calendar-grid {
+    display: grid;
+    grid-template-columns: 100px repeat(7, 1fr);
+    gap: 1px;
+    background-color: #2b3438;
+    border: 1px solid #2b3438;
+    min-width: 950px;
+}
+
+.day-header {
+    background-color: #1d1d1d;
+    color: #cd2c3b;
+    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.time-cell {
+    background-color: #1d1d1d;
+    color: #ffffff;
+    padding: 8px;
+    text-align: right;
+    font-size: 0.75rem;
+    border-bottom: 1px solid #1d1d1d;
+}
+
+.slot-cell {
+    background-color: #1d1d1d;
+    min-height: 55px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px;
+    transition: background-color 0.2s;
+}
+
+.slot-cell:hover {
+    background-color: #2b3438;
+}
+
+.slot-cell.has-employees {
+    background-color: rgba(205, 44, 59, 0.05);
+}
+
+.emp-badge {
+    background-color: #cd2c3b;
+    color: white;
+    font-size: 0.65rem;
+    padding: 1px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.emp-more {
+    font-size: 0.6rem;
+    color: #ffffff;
+    text-align: center;
+}

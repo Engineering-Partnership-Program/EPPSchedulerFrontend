@@ -1,0 +1,59 @@
+@* 1. Ensure MudBlazor is in scope *@
+@using MudBlazor
+@using EPPSchedulerFrontend.DataClasses
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Day Assignments</MudText>
+        <MudText Typo="Typo.subtitle2">@DateTime.Today.Add(Time).ToString("h:mm tt")</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudPaper Elevation="0" Style="max-height: 400px; overflow-y: auto;">
+            <MudList T="EmployeeProfile">
+                @foreach (var emp in AllEmployees)
+                {
+                    <MudListItem>
+                        <MudCheckBox T="bool" Value="@IsAssigned(emp)"
+                                     ValueChanged="@((bool val) => ToggleEmployee(emp, val))" Label="@($"{emp.name} ({emp.email})")"
+                                     Color="Color.Secondary" />
+                    </MudListItem>
+                }
+            </MudList>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="Submit">Update Slot</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    // 2. This is the magic variable. MudBlazor finds this automatically.
+    // Ensure the type is 'MudDialogInstance' and the name matches your calls below.
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public List<EmployeeProfile> AllEmployees { get; set; }
+    [Parameter] public List<EmployeeProfile> SelectedEmployees { get; set; }
+    [Parameter] public DayOfWeek Day { get; set; }
+    [Parameter] public TimeSpan Time { get; set; }
+
+    private bool IsAssigned(EmployeeProfile emp) => SelectedEmployees.Any(e => e.email == emp.email);
+
+    private void ToggleEmployee(EmployeeProfile emp, bool isSelected)
+    {
+        if (isSelected)
+        {
+            if (!IsAssigned(emp)) SelectedEmployees.Add(emp);
+        }
+        else
+        {
+            SelectedEmployees.RemoveAll(e => e.email == emp.email);
+        }
+    }
+
+    // 3. Use 'MudDialog' (the instance) to close or cancel, not the Service.
+    private void Submit() => MudDialog.Close(DialogResult.Ok(SelectedEmployees));
+    
+    private void Cancel() => MudDialog.Cancel();
+}

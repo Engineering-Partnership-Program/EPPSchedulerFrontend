@@ -3,42 +3,41 @@
 @using System.Runtime.CompilerServices
 
 <MudLayout>
-    <MudAppBar Color="@Color.Primary">
-        <MudLink Href="/dashboard">
-            <MudGrid>
-                <MudItem>
-                    <MudImage Src="images/SiteLogo.png" Alt="Western Colorado University Logo" Height="50">
-                    </MudImage>
-                </MudItem>
-                <MudItem>
-                    <MudText Typo="@Typo.h4" Color="@Color.Secondary" Style="font-weight:bold">EPP Scheduler</MudText>
-                </MudItem>
-            </MudGrid>
-        </MudLink>
-        <MudSpacer />
-        <MudMenu Dense Variant="Variant.Text" Size="Size.Medium" Icon="@Icons.Material.Filled.Menu"
-                 Color="Color.Inherit">
-            <MudMenuItem Icon="@Icons.Material.TwoTone.Logout" IconColor="@Color.Secondary" Label="Sign Out" Href="/" />
-        </MudMenu>
-    </MudAppBar>
-    <MudMainContent>
-        @Body
-    </MudMainContent>
-</MudLayout>
+    @* Removed explicit Color="Color.Primary" so it uses the theme's AppbarBackground.
+       Setting Elevation="0" removes the shadow for a completely flat look. *@
+    <MudAppBar Elevation="0">
+        <MudLink Href="/dashboard" Underline="Underline.None">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                <MudImage Src="images/SiteLogo.png" Alt="Western Colorado University Logo" Height="50" />
+                <MudText Typo="Typo.h4" Color="Color.Secondary" Style="font-weight:bold; margin-bottom: 0;">EPP
+                    Scheduler</MudText>
+                </MudStack>
+            </MudLink>
+            <MudSpacer />
+            <MudMenu Dense Variant="Variant.Text" Size="Size.Medium" Icon="@Icons.Material.Filled.Menu"
+                     Color="Color.Inherit">
+                <MudMenuItem Icon="@Icons.Material.TwoTone.Logout" IconColor="Color.Secondary" Label="Sign Out" Href="/" />
+            </MudMenu>
+        </MudAppBar>
+    
+        <MudMainContent>
+            @Body
+        </MudMainContent>
+    </MudLayout>
 
 @* Required *@
 <MudThemeProvider Theme="WesternTheme" @bind-IsDarkMode="@darkMode" />
 <MudPopoverProvider />
 
-@* Needed for dialogs *@
-<MudDialogProvider />
+    @* Needed for dialogs *@
+    <MudDialogProvider />
 
-@* Needed for snackbars *@
-<MudSnackbarProvider />
+    @* Needed for snackbars *@
+    <MudSnackbarProvider />
 
 @code {
-
     bool darkMode = true;
+    // Move theme to a property for cleaner access if needed
     MudTheme WesternTheme = new MudTheme()
     {
         PaletteDark = new PaletteDark()
@@ -47,8 +46,17 @@
             Secondary = "#cd2c3b",
             Tertiary = "#ffffff",
             Background = "#1d1d1d",
-            TextPrimary = "#ffffff",
-            TextSecondary = "#cd2c3b",
+            Surface = "#1d1d1d",
+            AppbarBackground = "#1d1d1d",
+            
+            // TEXT & INTERACTION FIXES:
+            TextPrimary = "#ffffff", // Main text color
+            DrawerText = "#ffffff", // Side panel text color
+            ActionDefault = "#ffffff", // Default icon/action color
+            ActionDisabled = "#666666", // Colors for disabled items
+            
+            // This controls the color of the text/icon when a NavLink is active
+            TextSecondary = "#cd2c3b"
         }
     };
 }

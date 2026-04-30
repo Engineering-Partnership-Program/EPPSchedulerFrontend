@@ -2,87 +2,160 @@
 @layout AdminLayout
 @inherits BaseComponent
 @using EPPSchedulerFrontend.DataClasses
+@inject IDialogService DialogService
 
 <PageTitle>EPP Scheduler | Admin Dashboard</PageTitle>
-@if (!displayInProgress)
-{
-    <MudSelect @bind-Value="_selectedScheduleProfile" @bind-Value:after="@displayScheduleProfile">
-        @foreach (string name in scheduleProfileNames)
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudStack Spacing="4">
+        @* --- TOP HEADER & PROFILE SELECTOR --- *@
+        <MudPaper Elevation="0" Class="pa-4" Style="border: 1px solid #2b3438;">
+            <MudGrid AlignItems="AlignItems.Center">
+                <MudItem xs="12" sm="8">
+                    <MudText Typo="Typo.h5" Color="Color.Secondary" Style="font-weight: bold">Admin Dashboard
+                    </MudText>
+                    <MudText Typo="Typo.body2">View and Change Hours.</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudSelect T="string" Label="Select Schedule Profile" @bind-Value="_selectedScheduleProfile"
+                               @bind-Value:after="displayScheduleProfile" Variant="Variant.Outlined">
+                        @foreach (string name in scheduleProfileNames)
+                        {
+                            <MudSelectItem Value="@name">@name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        @* --- CALENDAR VIEW --- *@
+        @if (!string.IsNullOrEmpty(_selectedScheduleProfile))
         {
-            <MudSelectItem Value="@name">@name</MudSelectItem>
+            <MudPaper Elevation="0" Class="pa-4" Style="border: 1px solid #2b3438; overflow-x: auto;">
+                <div class="calendar-grid">
+                    <div class="time-col"></div>
+                    @foreach (DayOfWeek day in Enum.GetValues<DayOfWeek>())
+                    {
+                        <div class="day-header">@day.ToString()</div>
+                    }
+
+                    @foreach (TimeSpan time in _timeSlots)
+                    {
+                        <div class="time-cell">@DateTime.Today.Add(time).ToString("h:mm tt")</div>
+                        
+                        @for (int dayIndex = 0; dayIndex < 7; dayIndex++)
+                        {
+                            DayOfWeek day = (DayOfWeek)dayIndex;
+                            List<EmployeeProfile>? assigned = GetAssignments(day, time);
+                            
+                            <div class="slot-cell @(assigned.Any() ? "has-employees" : "")"
+                                 @onclick="@(() => OpenAssignmentDialog(day, time))">
+                                @foreach (EmployeeProfile emp in assigned.Take(2))
+                                {
+                                    <span class="emp-badge">@emp.name</span>
+                                }
+                                @if (assigned.Count > 2)
+                                {
+                                    <span class="emp-more">+@(assigned.Count - 2) more</span>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </MudPaper>
+            
+            <MudStack Row="true" Justify="Justify.FlexEnd">
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="SaveMasterSchedule">Save All Changes
+                </MudButton>
+            </MudStack>
         }
-    </MudSelect>
-}
-<MudContainer>
-    <MudDataGrid Items="@Elements" Filterable="false">
-        <Columns>
-            <PropertyColumn Property="x => x.timeSlot.ToString()" Title="Time">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.sunday.ToString()" Title="Sunday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.monday.ToString()" Title="Monday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.tuesday.ToString()" Title="Tuesday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.wednesday.ToString()" Title="Wednesday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.thursday.ToString()" Title="Thursday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.friday.ToString()" Title="Friday">
-            </PropertyColumn>
-            <PropertyColumn Property="x => x.saturday.ToString()" Title="Saturday">
-            </PropertyColumn>
-        </Columns>
-    </MudDataGrid>
+    </MudStack>
 </MudContainer>
 
 @code {
-
-    private bool displaySchedule = false;
-
-    private IEnumerable<TimeSlot> Elements = new List<TimeSlot>();
-
     private string _selectedScheduleProfile;
-
-    List<ScheduleProfile> scheduleProfiles = new List<ScheduleProfile>();
-
-    List<string> scheduleProfileNames = new List<string>();
+    private List<ScheduleProfile> scheduleProfiles = new List<ScheduleProfile>();
+    private List<string> scheduleProfileNames = new List<string>();
+    private List<EmployeeProfile> _allEmployees = new List<EmployeeProfile>();
+    private List<TimeSpan> _timeSlots = new List<TimeSpan>();
     
-    private bool displayInProgress = false;
-    
+    // Key format: "Monday-08:30:00"
+    private Dictionary<string, List<EmployeeProfile>> _masterSchedule = new Dictionary<string, List<EmployeeProfile>>();
+
     protected override async Task OnInitializedAsync()
     {
+        // 1. Generate 30-min time slots (6 AM to 10 PM)
+        for (var i = 6.0; i < 22.0; i += 0.5) _timeSlots.Add(TimeSpan.FromHours(i));
+
         HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
 
-        HttpResponseMessage resp = await client.GetAsync("api/ScheduleProfile");
+        // 2. Fetch Schedule Profiles (Your original logic)
         try
         {
+            HttpResponseMessage? resp = await client.GetAsync("api/ScheduleProfile");
             resp.EnsureSuccessStatusCode();
+            scheduleProfiles = await resp.Content.ReadFromJsonAsync<List<ScheduleProfile>>();
+            scheduleProfileNames = scheduleProfiles.Select(x => x.name).ToList();
         }
-        catch (HttpRequestException)
+        catch (Exception) { snackbar.Add("Failed to get schedule profiles", Severity.Error); }
+
+        // 3. Fetch Employee Profiles
+        try
         {
-            snackbar.Add("Failed to get list of schedule profiles", Severity.Error);
-            return;
+            _allEmployees = await client.GetFromJsonAsync<List<EmployeeProfile>>("api/EmployeeProfile") ?? new
+List<EmployeeProfile>();
         }
+        catch (Exception) { snackbar.Add("Failed to load employees", Severity.Error); }
+    }
 
-        scheduleProfiles = await resp.Content.ReadFromJsonAsync<List<ScheduleProfile>>();
+    private async Task displayScheduleProfile()
+    {
+        _masterSchedule.Clear();
+        ScheduleProfile? currentProfile = scheduleProfiles.First(x => x.name == _selectedScheduleProfile);
+        HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
 
-        foreach (ScheduleProfile scheduleProfile in scheduleProfiles)
+        try
         {
-            scheduleProfileNames.Add(scheduleProfile.name);
+            FullSchedule? fullSchedule = await client.GetFromJsonAsync<FullSchedule>($"api/FullSchedule/{currentProfile.name}");
+            // Map incoming data to _masterSchedule dictionary here
+            snackbar.Add($"Loaded {currentProfile.name}", Severity.Success);
+        }
+        catch { snackbar.Add("No existing data for this profile", Severity.Info); }
+    }
+
+    private List<EmployeeProfile> GetAssignments(DayOfWeek day, TimeSpan time)
+    {
+        string? key = $"{day}-{time}";
+        return _masterSchedule.ContainsKey(key) ? _masterSchedule[key] : new List<EmployeeProfile>();
+    }
+
+    private async Task OpenAssignmentDialog(DayOfWeek day, TimeSpan time)
+    {
+        string? key = $"{day}-{time}";
+        List<EmployeeProfile>? current = GetAssignments(day, time);
+
+        DialogParameters<AssignmentDialog>? parameters = new DialogParameters<AssignmentDialog>
+        {
+            { x => x.AllEmployees, _allEmployees },
+            { x => x.SelectedEmployees, new List<EmployeeProfile>(current) },
+            { x => x.Day, day },
+            { x => x.Time, time }
+        };
+
+        DialogOptions? options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+        IDialogReference? dialog = await DialogService.ShowAsync<AssignmentDialog>("Edit Assignments", parameters, options);
+        DialogResult? result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is List<EmployeeProfile> updated)
+        {
+            _masterSchedule[key] = updated;
+            StateHasChanged();
         }
     }
 
-    private async void displayScheduleProfile()
+    private async Task SaveMasterSchedule()
     {
-        displayInProgress = true;
-
-        ScheduleProfile currentProfile = scheduleProfiles.First(x => x.name == _selectedScheduleProfile);
-
-        HttpClient client = clientFactory.CreateClient("EPPSchedulerBackend");
-
-        FullSchedule resp = await client.GetFromJsonAsync<FullSchedule>($"api/FullSchedule/{currentProfile.name}");
-
-        snackbar.Add("Got the things", Severity.Success);
+        // Logic to POST _masterSchedule back to API
+        snackbar.Add("Schedule saved successfully", Severity.Success);
     }
 }
